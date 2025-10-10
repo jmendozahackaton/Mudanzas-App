@@ -101,7 +101,7 @@ class AuthRepositoryImpl implements AuthRepository {
       await sharedPreferences.remove('user_data');
       return const Right(null);
     } catch (e) {
-      return Left(CacheFailure('Error al cerrar sesión'));
+      return const Left(CacheFailure('Error al cerrar sesión'));
     }
   }
 
@@ -111,7 +111,7 @@ class AuthRepositoryImpl implements AuthRepository {
       final token = sharedPreferences.getString('auth_token');
       return Right(token != null && token.isNotEmpty);
     } catch (e) {
-      return Left(CacheFailure('Error al verificar sesión'));
+      return const Left(CacheFailure('Error al verificar sesión'));
     }
   }
 
@@ -122,10 +122,10 @@ class AuthRepositoryImpl implements AuthRepository {
       if (token != null) {
         return Right(token);
       } else {
-        return Left(UnauthorizedFailure('No hay token disponible'));
+        return const Left(UnauthorizedFailure('No hay token disponible'));
       }
     } catch (e) {
-      return Left(CacheFailure('Error al obtener token'));
+      return const Left(CacheFailure('Error al obtener token'));
     }
   }
 }
