@@ -20,6 +20,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<RegisterEvent>(_onRegisterEvent);
     on<LogoutEvent>(_onLogoutEvent);
     on<CheckAuthStatusEvent>(_onCheckAuthStatusEvent);
+    on<UpdateAuthUserEvent>(_onUpdateAuthUserEvent);
   }
 
   Future<void> _onLoginEvent(LoginEvent event, Emitter<AuthState> emit) async {
@@ -68,8 +69,24 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   Future<void> _onCheckAuthStatusEvent(
       CheckAuthStatusEvent event, Emitter<AuthState> emit) async {
-    // Implement check from shared preferences
-    // This is simplified - you might want to check token validity
+    // ✅ Implementar lógica real aquí
+    // Por ejemplo: verificar token en SharedPreferences, etc.
+    emit(AuthLoading());
+
+    // Simulación - deberías implementar tu lógica real
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    // Ejemplo: si tienes un token válido, emitir AuthAuthenticated
+    // Si no, emitir AuthUnauthenticated
     emit(AuthUnauthenticated());
+  }
+
+  // ✅ Método corregido - mismo patrón que los demás
+  Future<void> _onUpdateAuthUserEvent(
+      UpdateAuthUserEvent event, Emitter<AuthState> emit) async {
+    // Si ya estamos autenticados, actualizamos el usuario
+    if (state is AuthAuthenticated) {
+      emit(AuthAuthenticated(user: event.user));
+    }
   }
 }

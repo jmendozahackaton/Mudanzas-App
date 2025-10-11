@@ -2,24 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
+import '../../../../core/utils/routes.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
-import '../bloc/admin_bloc.dart';
-import '../bloc/admin_state.dart';
-import 'users_management_page.dart';
 
-class AdminDashboard extends StatelessWidget {
-  const AdminDashboard({super.key});
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        title: const Text('Panel Administrador'),
+        title: const Text('Mudanzas App'),
         backgroundColor: Colors.blue.shade700,
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.person),
+            onPressed: () {
+              Navigator.pushNamed(context, AppRoutes.profile);
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () {
@@ -37,12 +41,12 @@ class AdminDashboard extends StatelessWidget {
             _buildWelcomeSection(context),
             const SizedBox(height: 32),
 
-            // Statistics
-            _buildStatisticsSection(),
+            // Quick Actions
+            _buildQuickActions(),
             const SizedBox(height: 32),
 
-            // Quick Actions
-            _buildAdminActions(context),
+            // Services Section
+            _buildServicesSection(),
             const SizedBox(height: 32),
 
             // Recent Activity
@@ -50,13 +54,21 @@ class AdminDashboard extends StatelessWidget {
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          _showNewRequestDialog(context);
+        },
+        backgroundColor: Colors.blue.shade700,
+        foregroundColor: Colors.white,
+        child: const Icon(Icons.add),
+      ),
     );
   }
 
   Widget _buildWelcomeSection(BuildContext context) {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
-        String userName = 'Administrador';
+        String userName = 'Usuario';
         if (state is AuthAuthenticated) {
           userName = state.user.nombre;
         }
@@ -85,38 +97,31 @@ class AdminDashboard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.admin_panel_settings,
-                      color: Colors.white,
-                      size: 24,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    '¡Hola, $userName!',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
+              Text(
+                '¡Hola, $userName!',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               const Text(
-                'Panel de control administrativo',
+                '¿En qué podemos ayudarte hoy?',
                 style: TextStyle(
                   color: Colors.white70,
                   fontSize: 16,
                 ),
+              ),
+              const SizedBox(height: 16),
+              // Stats Row
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildStatItem('3', 'Solicitudes'),
+                  _buildStatItem('1', 'En proceso'),
+                  _buildStatItem('2', 'Completadas'),
+                ],
               ),
             ],
           ),
@@ -125,99 +130,34 @@ class AdminDashboard extends StatelessWidget {
     );
   }
 
-  Widget _buildStatisticsSection() {
-    return BlocBuilder<AdminBloc, AdminState>(
-      builder: (context, state) {
-        return GridView.count(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisCount: 2,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-          children: [
-            _buildStatCard(
-              'Total Usuarios',
-              '156',
-              Icons.people,
-              Colors.blue,
-            ),
-            _buildStatCard(
-              'Mudanzas Activas',
-              '23',
-              Icons.local_shipping,
-              Colors.green,
-            ),
-            _buildStatCard(
-              'Ingresos Mensuales',
-              '\$12,450',
-              Icons.attach_money,
-              Colors.orange,
-            ),
-            _buildStatCard(
-              'Soporte Pendiente',
-              '8',
-              Icons.support_agent,
-              Colors.purple,
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildStatCard(
-      String title, String value, IconData icon, Color color) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(icon, color: color, size: 20),
-                ),
-                Text(
-                  value,
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: color,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              title,
-              style: const TextStyle(
-                color: Colors.grey,
-                fontSize: 14,
-              ),
-            ),
-          ],
+  Widget _buildStatItem(String value, String label) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-      ),
+        Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white70,
+            fontSize: 12,
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildAdminActions(BuildContext context) {
+  Widget _buildQuickActions() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Acciones Administrativas',
+          'Acciones Rápidas',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -232,34 +172,27 @@ class AdminDashboard extends StatelessWidget {
           crossAxisSpacing: 16,
           mainAxisSpacing: 16,
           children: [
-            _buildAdminActionCard(
-              Icons.people,
-              'Gestión de Usuarios',
-              Colors.blue,
-              () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const UsersManagementPage(),
-                  ),
-                );
-              },
-            ),
-            _buildAdminActionCard(
+            _buildActionCard(
               Icons.local_shipping,
-              'Mudanzas',
+              'Nueva Mudanza',
+              Colors.blue,
+              () {},
+            ),
+            _buildActionCard(
+              Icons.history,
+              'Historial',
               Colors.green,
               () {},
             ),
-            _buildAdminActionCard(
-              Icons.bar_chart,
-              'Reportes',
+            _buildActionCard(
+              Icons.payment,
+              'Pagos',
               Colors.orange,
               () {},
             ),
-            _buildAdminActionCard(
-              Icons.settings,
-              'Configuración',
+            _buildActionCard(
+              Icons.chat,
+              'Soporte',
               Colors.purple,
               () {},
             ),
@@ -269,7 +202,7 @@ class AdminDashboard extends StatelessWidget {
     );
   }
 
-  Widget _buildAdminActionCard(
+  Widget _buildActionCard(
       IconData icon, String title, Color color, VoidCallback onTap) {
     return Card(
       elevation: 2,
@@ -280,7 +213,7 @@ class AdminDashboard extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(16),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -293,22 +226,80 @@ class AdminDashboard extends StatelessWidget {
                 child: Icon(
                   icon,
                   color: color,
-                  size: 28,
+                  size: 24,
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               Text(
                 title,
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: color,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w500,
                   fontSize: 14,
                 ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildServicesSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Nuestros Servicios',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 16),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              _buildServiceItem('Mudanza Residencial', Icons.home, Colors.blue),
+              const SizedBox(width: 12),
+              _buildServiceItem('Mudanza Oficina', Icons.work, Colors.green),
+              const SizedBox(width: 12),
+              _buildServiceItem(
+                  'Transporte Local', Icons.local_shipping, Colors.orange),
+              const SizedBox(width: 12),
+              _buildServiceItem('Embalaje', Icons.inventory_2, Colors.purple),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildServiceItem(String title, IconData icon, Color color) {
+    return Container(
+      width: 140,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 32),
+          const SizedBox(height: 8),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontWeight: FontWeight.w500,
+              color: color,
+              fontSize: 12,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -335,14 +326,14 @@ class AdminDashboard extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                _buildAdminActivityItem(
-                    'Nuevo usuario registrado', 'Hace 5 min'),
+                _buildActivityItem(
+                    'Mudanza a Nuevo Laredo', 'En proceso', Colors.orange),
                 const Divider(),
-                _buildAdminActivityItem('Mudanza completada', 'Hace 1 hora'),
+                _buildActivityItem(
+                    'Traslado de oficina', 'Completado', Colors.green),
                 const Divider(),
-                _buildAdminActivityItem('Pago procesado', 'Hace 2 horas'),
-                const Divider(),
-                _buildAdminActivityItem('Solicitud de soporte', 'Hace 3 horas'),
+                _buildActivityItem(
+                    'Mudanza residencial', 'Pendiente', Colors.blue),
               ],
             ),
           ),
@@ -351,25 +342,27 @@ class AdminDashboard extends StatelessWidget {
     );
   }
 
-  Widget _buildAdminActivityItem(String title, String time) {
+  Widget _buildActivityItem(String title, String status, Color statusColor) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: Container(
-        width: 40,
-        height: 40,
+        width: 8,
+        height: 8,
         decoration: BoxDecoration(
-          color: Colors.blue.shade100,
+          color: statusColor,
           shape: BoxShape.circle,
         ),
-        child: const Icon(Icons.notifications, color: Colors.blue, size: 20),
       ),
       title: Text(
         title,
         style: const TextStyle(fontWeight: FontWeight.w500),
       ),
-      subtitle: Text(
-        time,
-        style: const TextStyle(color: Colors.grey),
+      trailing: Text(
+        status,
+        style: TextStyle(
+          color: statusColor,
+          fontWeight: FontWeight.w500,
+        ),
       ),
     );
   }
@@ -394,6 +387,22 @@ class AdminDashboard extends StatelessWidget {
               'Cerrar Sesión',
               style: TextStyle(color: Colors.red),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showNewRequestDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Nueva Solicitud'),
+        content: const Text('Funcionalidad en desarrollo'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
           ),
         ],
       ),
