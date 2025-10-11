@@ -8,7 +8,7 @@ import '../../features/user/presentation/pages/home_page.dart';
 import '../../features/user/presentation/pages/profile_page.dart';
 
 class AppRoutes {
-  static const String splash = '/';
+  static const String splash = '/splash';
   static const String login = '/login';
   static const String register = '/register';
   static const String home = '/home';

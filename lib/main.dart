@@ -41,7 +41,7 @@ class MyApp extends StatelessWidget {
         onGenerateRoute: (settings) {
           // Handle dynamic routes
           switch (settings.name) {
-            case '/admin/users':
+            case AppRoutes.adminUsers:
               return MaterialPageRoute(
                 builder: (context) => const UsersManagementPage(),
               );
