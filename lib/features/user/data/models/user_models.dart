@@ -45,21 +45,34 @@ class UserProfileModel extends Equatable {
   });
 
   factory UserProfileModel.fromJson(Map<String, dynamic> json) {
+    // ✅ VALIDAR CAMPOS REQUERIDOS
+    if (json['id'] == null) throw FormatException('Campo "id" es requerido');
+    if (json['nombre'] == null)
+      throw FormatException('Campo "nombre" es requerido');
+    if (json['apellido'] == null)
+      throw FormatException('Campo "apellido" es requerido');
+    if (json['email'] == null)
+      throw FormatException('Campo "email" es requerido');
+    if (json['rol'] == null) throw FormatException('Campo "rol" es requerido');
+
     return UserProfileModel(
-      id: json['id'],
-      uuid: json['uuid'],
-      nombre: json['nombre'],
-      apellido: json['apellido'],
-      email: json['email'],
+      id: json['id'] as int,
+      uuid: json['uuid'] as String? ??
+          '', // Proporcionar valor por defecto si es null
+      nombre: json['nombre'] as String,
+      apellido: json['apellido'] as String,
+      email: json['email'] as String,
       telefono: json['telefono'],
       fotoPerfil: json['foto_perfil'],
-      fechaRegistro: DateTime.parse(json['fecha_registro']),
+      fechaRegistro: DateTime.parse(
+          json['fecha_registro'] as String? ?? DateTime.now().toString()),
       ultimoAcceso: json['ultimo_acceso'] != null
-          ? DateTime.parse(json['ultimo_acceso'])
+          ? DateTime.parse(json['ultimo_acceso'] as String)
           : null,
-      estado: json['estado'],
-      rol: json['rol'],
-      password: json['password'],
+      estado: json['estado'] as String? ?? 'activo',
+      rol: json['rol'] as String,
+      password:
+          json['password'] as String? ?? '', // Proporcionar valor por defecto
     );
   }
 

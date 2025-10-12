@@ -23,6 +23,8 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
 
   Future<void> _onGetUsersEvent(
       GetUsersEvent event, Emitter<AdminState> emit) async {
+    print(
+        '🔄 AdminBloc: Obteniendo usuarios - page: ${event.page}, limit: ${event.limit}');
     emit(AdminLoading());
 
     final result = await getUsersUseCase(GetUsersParams(
@@ -31,8 +33,15 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
     ));
 
     result.fold(
-      (failure) => emit(AdminError(message: failure.message)),
-      (userList) => emit(UsersLoaded(userList: userList)),
+      (failure) {
+        print('❌ AdminBloc: Error obteniendo usuarios - ${failure.message}');
+        emit(AdminError(message: failure.message));
+      },
+      (userList) {
+        print(
+            '✅ AdminBloc: Usuarios obtenidos - ${userList.users.length} usuarios');
+        emit(UsersLoaded(userList: userList));
+      },
     );
   }
 

@@ -18,13 +18,21 @@ class UserBloc extends Bloc<UserEvent, UserState> {
 
   Future<void> _onGetProfileEvent(
       GetProfileEvent event, Emitter<UserState> emit) async {
+    print('🔄 UserBloc: Obteniendo perfil...');
     emit(UserLoading());
 
     final result = await getProfileUseCase();
 
     result.fold(
-      (failure) => emit(UserError(message: failure.message)),
-      (user) => emit(UserProfileLoaded(user: user)),
+      (failure) {
+        print('❌ UserBloc: Error obteniendo perfil - ${failure.message}');
+        emit(UserError(message: failure.message));
+      },
+      (user) {
+        print('✅ UserBloc: Perfil obtenido exitosamente - ${user.email}');
+        print('✅ UserBloc: Emitiendo UserProfileLoaded');
+        emit(UserProfileLoaded(user: user));
+      },
     );
   }
 

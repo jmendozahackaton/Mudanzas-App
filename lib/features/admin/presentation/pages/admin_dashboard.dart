@@ -12,42 +12,65 @@ class AdminDashboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey.shade50,
-      appBar: AppBar(
-        title: const Text('Panel Administrador'),
-        backgroundColor: Colors.blue.shade700,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () {
-              _showLogoutDialog(context);
-            },
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Welcome Section
-            _buildWelcomeSection(context),
-            const SizedBox(height: 32),
-
-            // Statistics
-            _buildStatisticsSection(),
-            const SizedBox(height: 32),
-
-            // Quick Actions
-            _buildAdminActions(context),
-            const SizedBox(height: 32),
-
-            // Recent Activity
-            _buildRecentActivity(),
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, state) {
+        // ✅ ESCUCHAR AuthUnauthenticated PARA LOGOUT
+        if (state is AuthUnauthenticated) {
+          print('🚪 Sesión cerrada - Redirigiendo a login');
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/login',
+            (route) => false, // Remover todas las rutas
+          );
+        }
+        // ✅ TAMBIÉN MANEJAR ERRORES DURANTE LOGOUT
+        else if (state is AuthError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      },
+      child: Scaffold(
+        // ✅ TU SCAFFOLD ACTUAL SE MANTIENE IGUAL
+        backgroundColor: Colors.grey.shade50,
+        appBar: AppBar(
+          title: const Text('Panel Administrador'),
+          backgroundColor: Colors.blue.shade700,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.logout),
+              onPressed: () {
+                _showLogoutDialog(context);
+              },
+            ),
           ],
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Welcome Section
+              _buildWelcomeSection(context),
+              const SizedBox(height: 32),
+
+              // Statistics
+              _buildStatisticsSection(),
+              const SizedBox(height: 32),
+
+              // Quick Actions
+              _buildAdminActions(context),
+              const SizedBox(height: 32),
+
+              // Recent Activity
+              _buildRecentActivity(),
+            ],
+          ),
         ),
       ),
     );
@@ -387,8 +410,11 @@ class AdminDashboard extends StatelessWidget {
           ),
           TextButton(
             onPressed: () {
+              print('1️⃣ Diálogo: Usuario confirmó logout');
               Navigator.pop(context);
+              print('2️⃣ Diálogo: Navegando a AuthBloc...');
               context.read<AuthBloc>().add(LogoutEvent());
+              print('3️⃣ Diálogo: LogoutEvent enviado');
             },
             child: const Text(
               'Cerrar Sesión',

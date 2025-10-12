@@ -26,7 +26,7 @@ class AuthRepositoryImpl implements AuthRepository {
       final request =
           LoginRequest(email: params.email, password: params.password);
       final response = await remoteDataSource.login(request);
-
+      print('✅ Login exitoso, guardando token...');
       // Save token and user data
       await sharedPreferences.setString('auth_token', response.token);
       await sharedPreferences.setString(
@@ -44,6 +44,10 @@ class AuthRepositoryImpl implements AuthRepository {
         fechaRegistro: DateTime.now(), // Update this from API if available
         ultimoAcceso: DateTime.now(),
       );
+
+      print('🔑 Token guardado: ${response.token.substring(0, 20)}...');
+      print('👤 Usuario: ${response.user.email}');
+      print('🎯 Rol: ${response.user.rol}');
 
       return Right(userEntity);
     } on ServerException catch (e) {
@@ -97,11 +101,27 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, void>> logout() async {
     try {
+      print('🔐 Cerrando sesión...');
+
+      // ✅ LIMPIAR TODOS LOS DATOS DE AUTENTICACIÓN
       await sharedPreferences.remove('auth_token');
       await sharedPreferences.remove('user_data');
+
+      // ✅ LIMPIAR CUALQUIER OTRO DATO RELACIONADO
+      final keys = sharedPreferences.getKeys();
+      for (final key in keys) {
+        if (key.contains('auth') ||
+            key.contains('user') ||
+            key.contains('token')) {
+          await sharedPreferences.remove(key);
+        }
+      }
+
+      print('✅ Sesión cerrada exitosamente');
       return const Right(null);
     } catch (e) {
-      return const Left(CacheFailure('Error al cerrar sesión'));
+      print('❌ Error al cerrar sesión: $e');
+      return Left(CacheFailure('Error al cerrar sesión: $e'));
     }
   }
 

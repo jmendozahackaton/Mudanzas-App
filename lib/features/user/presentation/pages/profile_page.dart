@@ -56,6 +56,7 @@ class _ProfilePageState extends State<ProfilePage> {
       body: BlocListener<UserBloc, UserState>(
         listener: (context, state) {
           if (state is UserProfileLoaded) {
+            print('✅ ProfilePage: Perfil cargado - ${state.user.email}');
             _loadUserData(state.user);
           } else if (state is UserProfileUpdated) {
             _stopEditing();
@@ -68,6 +69,7 @@ class _ProfilePageState extends State<ProfilePage> {
             // Update auth bloc with new user data
             context.read<AuthBloc>().add(CheckAuthStatusEvent());
           } else if (state is UserError) {
+            print('❌ ProfilePage: Error - ${state.message}');
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.message),

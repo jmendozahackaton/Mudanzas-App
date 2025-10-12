@@ -14,7 +14,21 @@ class LoginPage extends StatelessWidget {
       body: SafeArea(
         child: BlocListener<AuthBloc, AuthState>(
           listener: (context, state) {
-            if (state is AuthError) {
+            // ✅ AGREGAR MANEJO DE AuthAuthenticated
+            if (state is AuthAuthenticated) {
+              print(
+                  '✅ Login exitoso - Redirigiendo según rol: ${state.user.rol}');
+
+              // Navegar según el rol del usuario
+              if (state.user.rol == 'admin') {
+                Navigator.pushReplacementNamed(context, '/admin');
+              } else {
+                Navigator.pushReplacementNamed(context, '/home');
+              }
+            }
+            // ✅ MANTENER MANEJO DE ERRORES
+            else if (state is AuthError) {
+              print('❌ Error de login: ${state.message}');
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(state.message),

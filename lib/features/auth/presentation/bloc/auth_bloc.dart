@@ -25,6 +25,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   Future<void> _onLoginEvent(LoginEvent event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
+    print('🔄 AuthBloc: Iniciando login para ${event.email}');
 
     final result = await loginUseCase(LoginParams(
       email: event.email,
@@ -32,8 +33,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     ));
 
     result.fold(
-      (failure) => emit(AuthError(message: failure.message)),
-      (user) => emit(AuthAuthenticated(user: user)),
+      (failure) {
+        print('❌ AuthBloc: Login falló - ${failure.message}');
+        emit(AuthError(message: failure.message));
+      },
+      (user) {
+        print(
+            '✅ AuthBloc: Login exitoso - Usuario: ${user.email}, Rol: ${user.rol}');
+        emit(AuthAuthenticated(user: user));
+      },
     );
   }
 
@@ -57,13 +65,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   Future<void> _onLogoutEvent(
       LogoutEvent event, Emitter<AuthState> emit) async {
+    print('🚀 AuthBloc: Iniciando logout...');
     emit(AuthLoading());
 
     final result = await logoutUseCase();
 
     result.fold(
-      (failure) => emit(AuthError(message: failure.message)),
-      (_) => emit(AuthUnauthenticated()),
+      (failure) {
+        print('❌ AuthBloc: Logout falló - ${failure.message}');
+        emit(AuthError(message: failure.message));
+      },
+      (_) {
+        print('✅ AuthBloc: Logout exitoso - Emitiendo AuthUnauthenticated');
+        emit(AuthUnauthenticated());
+      },
     );
   }
 

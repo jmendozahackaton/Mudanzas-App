@@ -51,9 +51,18 @@ class LoginResponse extends Equatable {
   const LoginResponse({required this.user, required this.token});
 
   factory LoginResponse.fromJson(Map<String, dynamic> json) {
+    // ✅ VALIDAR CAMPOS REQUERIDOS
+    if (json['user'] == null) {
+      throw const FormatException('Campo "user" es requerido en LoginResponse');
+    }
+    if (json['token'] == null) {
+      throw const FormatException(
+          'Campo "token" es requerido en LoginResponse');
+    }
+
     return LoginResponse(
       user: UserModel.fromJson(json['user']),
-      token: json['token'],
+      token: json['token'] as String,
     );
   }
 
@@ -81,14 +90,24 @@ class UserModel extends Equatable {
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
+    // ✅ VALIDAR CAMPOS REQUERIDOS EN USER
+    if (json['id'] == null) throw FormatException('Campo "id" es requerido');
+    if (json['nombre'] == null)
+      throw FormatException('Campo "nombre" es requerido');
+    if (json['apellido'] == null)
+      throw FormatException('Campo "apellido" es requerido');
+    if (json['email'] == null)
+      throw FormatException('Campo "email" es requerido');
+    if (json['rol'] == null) throw FormatException('Campo "rol" es requerido');
+
     return UserModel(
-      id: json['id'],
-      nombre: json['nombre'],
-      apellido: json['apellido'],
-      email: json['email'],
+      id: json['id'] as int,
+      nombre: json['nombre'] as String,
+      apellido: json['apellido'] as String,
+      email: json['email'] as String,
       telefono: json['telefono'],
       fotoPerfil: json['foto_perfil'],
-      rol: json['rol'],
+      rol: json['rol'] as String,
     );
   }
 

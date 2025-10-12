@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import '../../../../core/errors/exceptions.dart';
 import '../../../../core/network/api_client.dart';
 import '../models/admin_models.dart';
@@ -16,13 +18,54 @@ class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
   @override
   Future<UsersListResponse> getUsers({int page = 1, int limit = 10}) async {
     try {
+      print('📤 Get Users request - page: $page, limit: $limit');
+
       final response = await apiClient.get('/api/admin/users', params: {
-        'page': page,
-        'limit': limit,
+        'page': page.toString(), // ✅ CONVERTIR A STRING
+        'limit': limit.toString(), // ✅ CONVERTIR A STRING
       });
-      return UsersListResponse.fromJson(response);
+
+      print('📥 Get Users response type: ${response.runtimeType}');
+      print('📥 Get Users response: $response');
+
+      // ✅ VERIFICAR QUE LA RESPUESTA NO SEA NULL
+      if (response == null) {
+        throw ServerException('Respuesta vacía del servidor');
+      }
+
+      // ✅ PARSEAR RESPUESTA
+      dynamic responseData = response;
+      if (responseData is String) {
+        responseData = json.decode(responseData);
+      }
+
+      // ✅ VERIFICAR QUE SEA UN MAP VÁLIDO
+      if (responseData is Map<String, dynamic>) {
+        // ✅ VERIFICAR LA ESTRUCTURA DE TU API
+        if (responseData['status'] == 'success' &&
+            responseData['data'] != null) {
+          final data = responseData['data'] as Map<String, dynamic>;
+
+          // ✅ CREAR EL MAP QUE ESPERA UsersListResponse.fromJson
+          final usersListData = {
+            'users': data['users'] ?? [],
+            'pagination': data['pagination'] ?? {},
+          };
+
+          return UsersListResponse.fromJson(usersListData);
+        } else {
+          final errorMessage =
+              responseData['message'] ?? 'Error al obtener usuarios';
+          throw ServerException(errorMessage);
+        }
+      } else {
+        throw ServerException('Formato de respuesta inválido');
+      }
     } on ServerException {
       rethrow;
+    } catch (e) {
+      print('❌ Error al obtener usuarios: $e');
+      throw ServerException('Error al obtener usuarios: $e');
     }
   }
 

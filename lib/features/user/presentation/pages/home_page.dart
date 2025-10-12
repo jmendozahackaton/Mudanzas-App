@@ -10,57 +10,80 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey.shade50,
-      appBar: AppBar(
-        title: const Text('Mudanzas App'),
-        backgroundColor: Colors.blue.shade700,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.person),
-            onPressed: () {
-              Navigator.pushNamed(context, AppRoutes.profile);
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () {
-              _showLogoutDialog(context);
-            },
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Welcome Section
-            _buildWelcomeSection(context),
-            const SizedBox(height: 32),
-
-            // Quick Actions
-            _buildQuickActions(),
-            const SizedBox(height: 32),
-
-            // Services Section
-            _buildServicesSection(),
-            const SizedBox(height: 32),
-
-            // Recent Activity
-            _buildRecentActivity(),
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, state) {
+        // ✅ ESCUCHAR AuthUnauthenticated PARA LOGOUT
+        if (state is AuthUnauthenticated) {
+          print('🚪 Sesión cerrada - Redirigiendo a login');
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/login',
+            (route) => false, // Remover todas las rutas
+          );
+        }
+        // ✅ TAMBIÉN MANEJAR ERRORES DURANTE LOGOUT
+        else if (state is AuthError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      },
+      child: Scaffold(
+        // ✅ TU SCAFFOLD ACTUAL SE MANTIENE IGUAL
+        backgroundColor: Colors.grey.shade50,
+        appBar: AppBar(
+          title: const Text('Mudanzas App'),
+          backgroundColor: Colors.blue.shade700,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.person),
+              onPressed: () {
+                Navigator.pushNamed(context, AppRoutes.profile);
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.logout),
+              onPressed: () {
+                _showLogoutDialog(context);
+              },
+            ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          _showNewRequestDialog(context);
-        },
-        backgroundColor: Colors.blue.shade700,
-        foregroundColor: Colors.white,
-        child: const Icon(Icons.add),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Welcome Section
+              _buildWelcomeSection(context),
+              const SizedBox(height: 32),
+
+              // Quick Actions
+              _buildQuickActions(),
+              const SizedBox(height: 32),
+
+              // Services Section
+              _buildServicesSection(),
+              const SizedBox(height: 32),
+
+              // Recent Activity
+              _buildRecentActivity(),
+            ],
+          ),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            _showNewRequestDialog(context);
+          },
+          backgroundColor: Colors.blue.shade700,
+          foregroundColor: Colors.white,
+          child: const Icon(Icons.add),
+        ),
       ),
     );
   }

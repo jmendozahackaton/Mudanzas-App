@@ -285,43 +285,74 @@ class _UsersManagementPageState extends State<UsersManagementPage> {
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Cambiar Rol'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Selecciona el nuevo rol:'),
-            const SizedBox(height: 16),
-            DropdownButton<String>(
-              value: selectedRole,
-              onChanged: (String? newValue) {
-                setState(() {
-                  selectedRole = newValue!;
-                });
-              },
-              items: ['cliente', 'admin', 'proveedor']
-                  .map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value.toUpperCase()),
-                );
-              }).toList(),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('Cambiar Rol'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Selecciona el nuevo rol:'),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: selectedRole,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: 'Rol',
+                ),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    selectedRole = newValue!;
+                  });
+                },
+                items: ['cliente', 'admin', 'proveedor']
+                    .map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(
+                      value.toUpperCase(),
+                      style: TextStyle(
+                        color: _getRoleColor(value),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Actual: ${user.rol.toUpperCase()}',
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: selectedRole == user.rol
+                  ? null // Deshabilitar si no hay cambios
+                  : () {
+                      Navigator.pop(context);
+                      _updateUserRole(user.id, selectedRole);
+                    },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue.shade700,
+                foregroundColor: Colors.white,
+                textStyle: const TextStyle(
+                  // ✅ Agregar este estilo
+                  fontSize: 16, // Mismo tamaño que TextButton
+                  fontWeight: FontWeight.normal,
+                ),
+              ),
+              child: const Text('Actualizar Rol'),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _updateUserRole(user.id, selectedRole);
-            },
-            child: const Text('Actualizar'),
-          ),
-        ],
       ),
     );
   }
