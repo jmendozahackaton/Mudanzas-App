@@ -166,9 +166,13 @@ class _UsersManagementPageState extends State<UsersManagementPage> {
             const SizedBox(height: 4),
             Row(
               children: [
-                _buildRoleChip(user.rol),
+                Expanded(
+                  child: _buildRoleChip(user.rol),
+                ),
                 const SizedBox(width: 8),
-                _buildStatusChip(user.estado),
+                Expanded(
+                  child: _buildStatusChip(user.estado),
+                ),
               ],
             ),
           ],
@@ -219,14 +223,15 @@ class _UsersManagementPageState extends State<UsersManagementPage> {
       label: Text(
         role.toUpperCase(),
         style: const TextStyle(
-          fontSize: 10,
+          fontSize: 9,
           color: Colors.white,
           fontWeight: FontWeight.bold,
         ),
       ),
       backgroundColor: color,
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      labelPadding: const EdgeInsets.symmetric(horizontal: 8),
+      labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+      visualDensity: VisualDensity.compact,
     );
   }
 
@@ -235,14 +240,15 @@ class _UsersManagementPageState extends State<UsersManagementPage> {
       label: Text(
         status.toUpperCase(),
         style: const TextStyle(
-          fontSize: 10,
+          fontSize: 9,
           color: Colors.white,
           fontWeight: FontWeight.bold,
         ),
       ),
       backgroundColor: status == 'activo' ? Colors.green : Colors.red,
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      labelPadding: const EdgeInsets.symmetric(horizontal: 8),
+      labelPadding: const EdgeInsets.symmetric(horizontal: 4),
+      visualDensity: VisualDensity.compact,
     );
   }
 
