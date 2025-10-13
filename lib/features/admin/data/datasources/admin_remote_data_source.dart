@@ -2,12 +2,21 @@ import 'dart:convert';
 
 import '../../../../core/errors/exceptions.dart';
 import '../../../../core/network/api_client.dart';
+import '../../domain/entities/admin_entities.dart';
 import '../models/admin_models.dart';
 
 abstract class AdminRemoteDataSource {
   Future<UsersListResponse> getUsers({int page = 1, int limit = 10});
   Future<void> updateUserStatus(UpdateUserStatusRequest request);
   Future<void> updateUserRole(UpdateUserRoleRequest request);
+  Future<UsersListResponse> searchUsers({
+    required String query,
+    int page = 1,
+    int limit = 10,
+  });
+
+  Future<UserModel> getUserById({required int userId});
+  Future<UserModel> updateUserProfile({required UserEntity user});
 }
 
 class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
@@ -84,6 +93,178 @@ class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
       await apiClient.put('/api/admin/users/role', request.toJson());
     } on ServerException {
       rethrow;
+    }
+  }
+
+  @override
+  Future<UsersListResponse> searchUsers({
+    required String query,
+    int page = 1,
+    int limit = 10,
+  }) async {
+    try {
+      print('🔍 Buscando usuarios: $query');
+
+      final response = await apiClient.get('/api/admin/users/search', params: {
+        'q': query,
+        'page': page.toString(),
+        'limit': limit.toString(),
+      });
+
+      print('📥 Search response type: ${response.runtimeType}');
+      print('📥 Search response: $response');
+
+      // ✅ VERIFICAR QUE LA RESPUESTA NO SEA NULL
+      if (response == null) {
+        throw ServerException('Respuesta vacía del servidor');
+      }
+
+      // ✅ PARSEAR RESPUESTA
+      dynamic responseData = response;
+      if (responseData is String) {
+        responseData = json.decode(responseData);
+      }
+
+      // ✅ VERIFICAR QUE SEA UN MAP VÁLIDO
+      if (responseData is Map<String, dynamic>) {
+        // ✅ VERIFICAR LA ESTRUCTURA DE TU API
+        if (responseData['status'] == 'success' &&
+            responseData['data'] != null) {
+          final data = responseData['data'] as Map<String, dynamic>;
+
+          // ✅ CREAR EL MAP QUE ESPERA UsersListResponse.fromJson
+          final usersListData = {
+            'users': data['users'] ?? [],
+            'pagination': data['pagination'] ?? {},
+          };
+
+          return UsersListResponse.fromJson(usersListData);
+        } else {
+          final errorMessage =
+              responseData['message'] ?? 'Error en la búsqueda';
+          throw ServerException(errorMessage);
+        }
+      } else {
+        throw ServerException('Formato de respuesta inválido');
+      }
+    } on ServerException {
+      rethrow;
+    } catch (e) {
+      print('❌ Error en búsqueda: $e');
+      throw ServerException('Error en búsqueda: $e');
+    }
+  }
+
+  @override
+  Future<UserModel> getUserById({required int userId}) async {
+    try {
+      print('📤 Obteniendo usuario ID: $userId');
+
+      final response = await apiClient.get('/api/admin/users/single', params: {
+        'id': userId.toString(),
+      });
+
+      print('📥 Get User By ID response type: ${response.runtimeType}');
+      print('📥 Get User By ID response: $response');
+
+      // ✅ VERIFICAR QUE LA RESPUESTA NO SEA NULL
+      if (response == null) {
+        throw ServerException('Respuesta vacía del servidor');
+      }
+
+      // ✅ PARSEAR RESPUESTA
+      dynamic responseData = response;
+      if (responseData is String) {
+        responseData = json.decode(responseData);
+      }
+
+      // ✅ VERIFICAR QUE SEA UN MAP VÁLIDO
+      if (responseData is Map<String, dynamic>) {
+        // ✅ VERIFICAR LA ESTRUCTURA DE TU API
+        if (responseData['status'] == 'success' &&
+            responseData['data'] != null) {
+          final data = responseData['data'] as Map<String, dynamic>;
+
+          if (data['user'] != null) {
+            // ✅ DEVOLVER UserModel INDIVIDUAL, NO UsersListResponse
+            return UserModel.fromJson(data['user']);
+          } else {
+            throw ServerException('Campo "user" faltante en la respuesta');
+          }
+        } else {
+          final errorMessage =
+              responseData['message'] ?? 'Error al obtener usuario';
+          throw ServerException(errorMessage);
+        }
+      } else {
+        throw ServerException('Formato de respuesta inválido');
+      }
+    } on ServerException {
+      rethrow;
+    } catch (e) {
+      print('❌ Error obteniendo usuario: $e');
+      throw ServerException('Error obteniendo usuario: $e');
+    }
+  }
+
+  @override
+  Future<UserModel> updateUserProfile({required UserEntity user}) async {
+    try {
+      print('📤 Actualizando perfil usuario ID: ${user.id}');
+
+      final requestData = {
+        'user_id': user.id,
+        'nombre': user.nombre,
+        'apellido': user.apellido,
+        'email': user.email,
+        'telefono': user.telefono,
+        'rol': user.rol,
+        'estado': user.estado,
+      };
+
+      final response =
+          await apiClient.put('/api/admin/users/profile', requestData);
+
+      print('📥 Update Profile response type: ${response.runtimeType}');
+      print('📥 Update Profile response: $response');
+
+      // ✅ VERIFICAR QUE LA RESPUESTA NO SEA NULL
+      if (response == null) {
+        throw ServerException('Respuesta vacía del servidor');
+      }
+
+      // ✅ PARSEAR RESPUESTA
+      dynamic responseData = response;
+      if (responseData is String) {
+        responseData = json.decode(responseData);
+      }
+
+      // ✅ VERIFICAR QUE SEA UN MAP VÁLIDO
+      if (responseData is Map<String, dynamic>) {
+        // ✅ VERIFICAR LA ESTRUCTURA DE TU API
+        if (responseData['status'] == 'success' &&
+            responseData['data'] != null) {
+          final data = responseData['data'] as Map<String, dynamic>;
+
+          if (data['user'] != null) {
+            // ✅ DEVOLVER UserModel INDIVIDUAL
+            return UserModel.fromJson(data['user']);
+          } else {
+            throw ServerException('Campo "user" faltante en la respuesta');
+          }
+        } else {
+          final errorMessage =
+              responseData['message'] ?? 'Error al actualizar perfil';
+          throw ServerException(errorMessage);
+        }
+      } else {
+        throw ServerException('Formato de respuesta inválido');
+      }
+    } on ServerException {
+      rethrow;
+    } catch (e) {
+      print('❌ Error actualizando perfil: $e');
+      throw ServerException('Error actualizando perfil: $e');
     }
   }
 }

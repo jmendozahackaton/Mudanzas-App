@@ -99,4 +99,121 @@ class AdminRepositoryImpl implements AdminRepository {
       return Left(UnauthorizedFailure(e.message));
     }
   }
+
+  @override
+  Future<Either<Failure, UserListEntity>> searchUsers({
+    required String query,
+    int page = 1,
+    int limit = 10,
+  }) async {
+    try {
+      final response = await remoteDataSource.searchUsers(
+        query: query,
+        page: page,
+        limit: limit,
+      );
+      return _mapResponseToEntity(response);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(e.message));
+    } on UnauthorizedException catch (e) {
+      return Left(UnauthorizedFailure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, UserEntity>> getUserById({
+    required int userId,
+  }) async {
+    try {
+      final response = await remoteDataSource.getUserById(userId: userId);
+
+      final user = UserEntity(
+        id: response.id,
+        uuid: response.uuid,
+        nombre: response.nombre,
+        apellido: response.apellido,
+        email: response.email,
+        telefono: response.telefono,
+        fotoPerfil: response.fotoPerfil,
+        fechaRegistro: response.fechaRegistro,
+        ultimoAcceso: response.ultimoAcceso,
+        estado: response.estado,
+        rol: response.rol,
+      );
+
+      return Right(user);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(e.message));
+    } on UnauthorizedException catch (e) {
+      return Left(UnauthorizedFailure(e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, UserEntity>> updateUserProfile({
+    required UserEntity user,
+  }) async {
+    try {
+      final response = await remoteDataSource.updateUserProfile(user: user);
+
+      final updatedUser = UserEntity(
+        id: response.id,
+        uuid: response.uuid,
+        nombre: response.nombre,
+        apellido: response.apellido,
+        email: response.email,
+        telefono: response.telefono,
+        fotoPerfil: response.fotoPerfil,
+        fechaRegistro: response.fechaRegistro,
+        ultimoAcceso: response.ultimoAcceso,
+        estado: response.estado,
+        rol: response.rol,
+      );
+
+      return Right(updatedUser);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(e.message));
+    } on UnauthorizedException catch (e) {
+      return Left(UnauthorizedFailure(e.message));
+    }
+  }
+
+  Either<Failure, UserListEntity> _mapResponseToEntity(
+      UsersListResponse response) {
+    final users = response.users
+        .map((user) => UserEntity(
+              id: user.id,
+              uuid: user.uuid,
+              nombre: user.nombre,
+              apellido: user.apellido,
+              email: user.email,
+              telefono: user.telefono,
+              fotoPerfil: user.fotoPerfil,
+              fechaRegistro: user.fechaRegistro,
+              ultimoAcceso: user.ultimoAcceso,
+              estado: user.estado,
+              rol: user.rol,
+            ))
+        .toList();
+
+    final pagination = PaginationEntity(
+      page: response.pagination.page,
+      limit: response.pagination.limit,
+      total: response.pagination.total,
+      pages: response.pagination.pages,
+    );
+
+    final userListEntity = UserListEntity(
+      users: users,
+      pagination: pagination,
+    );
+
+    return Right(userListEntity);
+  }
 }

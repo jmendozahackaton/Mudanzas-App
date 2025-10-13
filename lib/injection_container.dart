@@ -26,6 +26,9 @@ import 'features/admin/domain/repositories/admin_repository.dart';
 import 'features/admin/domain/usecases/get_users_usecase.dart';
 import 'features/admin/domain/usecases/update_user_status_usecase.dart';
 import 'features/admin/domain/usecases/update_user_role_usecase.dart';
+import 'features/admin/domain/usecases/search_users_usecase.dart';
+import 'features/admin/domain/usecases/get_user_by_id_usecase.dart';
+import 'features/admin/domain/usecases/update_user_profile_usecase.dart';
 import 'features/admin/presentation/bloc/admin_bloc.dart';
 
 final sl = GetIt.instance;
@@ -100,11 +103,17 @@ Future<void> init() async {
   sl.registerLazySingleton(() => GetUsersUseCase(sl()));
   sl.registerLazySingleton(() => UpdateUserStatusUseCase(sl()));
   sl.registerLazySingleton(() => UpdateUserRoleUseCase(sl()));
+  sl.registerLazySingleton(() => SearchUsersUseCase(sl()));
+  sl.registerLazySingleton(() => GetUserByIdUseCase(sl()));
+  sl.registerLazySingleton(() => UpdateUserProfileUseCase(sl()));
 
   // Bloc
   sl.registerFactory(() => AdminBloc(
         getUsersUseCase: sl(),
         updateUserStatusUseCase: sl(),
         updateUserRoleUseCase: sl(),
+        searchUsersUseCase: sl(),
+        getUserByIdUseCase: sl(),
+        updateUserProfileUseCase: sl(),
       ));
 }

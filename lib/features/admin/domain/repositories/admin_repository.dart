@@ -17,4 +17,18 @@ abstract class AdminRepository {
     required int userId,
     required String role,
   });
+
+  Future<Either<Failure, UserListEntity>> searchUsers({
+    required String query,
+    int page = 1,
+    int limit = 10,
+  });
+
+  Future<Either<Failure, UserEntity>> getUserById({
+    required int userId,
+  });
+
+  Future<Either<Failure, UserEntity>> updateUserProfile({
+    required UserEntity user,
+  });
 }
