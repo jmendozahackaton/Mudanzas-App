@@ -4,11 +4,26 @@ import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
 import '../bloc/admin_bloc.dart';
+import '../bloc/admin_event.dart';
 import '../bloc/admin_state.dart';
 import 'users_management_page.dart';
 
-class AdminDashboard extends StatelessWidget {
+class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});
+
+  @override
+  State<AdminDashboard> createState() => _AdminDashboardState();
+}
+
+class _AdminDashboardState extends State<AdminDashboard> {
+  @override
+  void initState() {
+    super.initState();
+    // Cargar usuarios al iniciar
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AdminBloc>().add(const GetUsersEvent(page: 1, limit: 1));
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -124,7 +139,7 @@ class AdminDashboard extends StatelessWidget {
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    '¡Hola, $userName!',
+                    '¡Bienvenido, $userName!',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 24,
@@ -151,6 +166,10 @@ class AdminDashboard extends StatelessWidget {
   Widget _buildStatisticsSection() {
     return BlocBuilder<AdminBloc, AdminState>(
       builder: (context, state) {
+        int usersCount = 0;
+        if (state is UsersLoaded) {
+          usersCount = state.userList.pagination.total;
+        }
         return GridView.count(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -160,7 +179,7 @@ class AdminDashboard extends StatelessWidget {
           children: [
             _buildStatCard(
               'Total Usuarios',
-              '156',
+              usersCount.toString(),
               Icons.people,
               Colors.blue,
             ),
