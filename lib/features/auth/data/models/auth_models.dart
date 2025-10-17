@@ -91,14 +91,21 @@ class UserModel extends Equatable {
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     // ✅ VALIDAR CAMPOS REQUERIDOS EN USER
-    if (json['id'] == null) throw FormatException('Campo "id" es requerido');
-    if (json['nombre'] == null)
-      throw FormatException('Campo "nombre" es requerido');
-    if (json['apellido'] == null)
-      throw FormatException('Campo "apellido" es requerido');
-    if (json['email'] == null)
-      throw FormatException('Campo "email" es requerido');
-    if (json['rol'] == null) throw FormatException('Campo "rol" es requerido');
+    if (json['id'] == null) {
+      throw const FormatException('Campo "id" es requerido');
+    }
+    if (json['nombre'] == null) {
+      throw const FormatException('Campo "nombre" es requerido');
+    }
+    if (json['apellido'] == null) {
+      throw const FormatException('Campo "apellido" es requerido');
+    }
+    if (json['email'] == null) {
+      throw const FormatException('Campo "email" es requerido');
+    }
+    if (json['rol'] == null) {
+      throw const FormatException('Campo "rol" es requerido');
+    }
 
     return UserModel(
       id: json['id'] as int,

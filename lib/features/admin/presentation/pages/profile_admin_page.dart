@@ -180,14 +180,13 @@ class _ProfileAdminPageState extends State<ProfileAdminPage> {
                 color: Colors.grey,
               ),
             ),
-            if (_editingUser.fechaRegistro != null)
-              Text(
-                'Registrado: ${_editingUser.fechaRegistro!.toString().split(' ')[0]}',
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey,
-                ),
+            Text(
+              'Registrado: ${_editingUser.fechaRegistro.toString().split(' ')[0]}',
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.grey,
               ),
+            ),
           ],
         ),
       ),
@@ -198,7 +197,7 @@ class _ProfileAdminPageState extends State<ProfileAdminPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withAlpha(25),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: color),
       ),

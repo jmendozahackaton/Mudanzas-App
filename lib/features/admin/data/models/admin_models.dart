@@ -12,10 +12,11 @@ class UsersListResponse extends Equatable {
   factory UsersListResponse.fromJson(Map<String, dynamic> json) {
     // ✅ VALIDAR CAMPOS REQUERIDOS
     if (json['users'] == null) {
-      throw FormatException('Campo "users" es requerido en UsersListResponse');
+      throw const FormatException(
+          'Campo "users" es requerido en UsersListResponse');
     }
     if (json['pagination'] == null) {
-      throw FormatException(
+      throw const FormatException(
           'Campo "pagination" es requerido en UsersListResponse');
     }
 
