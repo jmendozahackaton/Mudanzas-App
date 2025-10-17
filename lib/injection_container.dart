@@ -31,6 +31,31 @@ import 'features/admin/domain/usecases/get_user_by_id_usecase.dart';
 import 'features/admin/domain/usecases/update_user_profile_usecase.dart';
 import 'features/admin/presentation/bloc/admin_bloc.dart';
 
+// Provider
+import 'features/provider/data/datasources/provider_remote_data_source.dart';
+import 'features/provider/data/repositories/provider_repository_impl.dart';
+import 'features/provider/domain/repositories/provider_repository.dart';
+import 'features/provider/domain/usecases/register_provider_usecase.dart';
+import 'features/provider/domain/usecases/get_provider_profile_usecase.dart';
+import 'features/provider/domain/usecases/update_provider_profile_usecase.dart';
+import 'features/provider/domain/usecases/update_provider_availability_usecase.dart';
+import 'features/provider/domain/usecases/update_provider_location_usecase.dart';
+import 'features/provider/domain/usecases/get_provider_statistics_usecase.dart';
+import 'features/provider/domain/usecases/search_providers_location_usecase.dart';
+import 'features/provider/presentation/bloc/provider_bloc.dart';
+
+// Moving
+import 'features/moving/data/datasources/moving_remote_data_source.dart';
+import 'features/moving/data/repositories/moving_repository_impl.dart';
+import 'features/moving/domain/repositories/moving_repository.dart';
+import 'features/moving/domain/usecases/create_moving_request_usecase.dart';
+import 'features/moving/domain/usecases/get_client_requests_usecase.dart';
+import 'features/moving/domain/usecases/get_all_requests_usecase.dart';
+import 'features/moving/domain/usecases/get_client_movings_usecase.dart';
+import 'features/moving/domain/usecases/update_moving_status_usecase.dart';
+import 'features/moving/domain/usecases/assign_provider_usecase.dart';
+import 'features/moving/presentation/bloc/moving_bloc.dart';
+
 final sl = GetIt.instance;
 
 Future<void> init() async {
@@ -115,5 +140,65 @@ Future<void> init() async {
         searchUsersUseCase: sl(),
         getUserByIdUseCase: sl(),
         updateUserProfileUseCase: sl(),
+      ));
+
+  // Provider
+  // Data sources
+  sl.registerLazySingleton<ProviderRemoteDataSource>(
+    () => ProviderRemoteDataSourceImpl(apiClient: sl()),
+  );
+
+  // Repository
+  sl.registerLazySingleton<ProviderRepository>(
+    () => ProviderRepositoryImpl(remoteDataSource: sl()),
+  );
+
+  // Use cases
+  sl.registerLazySingleton(() => RegisterProviderUseCase(sl()));
+  sl.registerLazySingleton(() => GetProviderProfileUseCase(sl()));
+  sl.registerLazySingleton(() => UpdateProviderProfileUseCase(sl()));
+  sl.registerLazySingleton(() => UpdateProviderAvailabilityUseCase(sl()));
+  sl.registerLazySingleton(() => UpdateProviderLocationUseCase(sl()));
+  sl.registerLazySingleton(() => GetProviderStatisticsUseCase(sl()));
+  sl.registerLazySingleton(() => SearchProvidersLocationUseCase(sl()));
+
+  // Bloc
+  sl.registerFactory(() => ProviderBloc(
+        registerProviderUseCase: sl(),
+        getProviderProfileUseCase: sl(),
+        updateProviderProfileUseCase: sl(),
+        updateProviderAvailabilityUseCase: sl(),
+        updateProviderLocationUseCase: sl(),
+        getProviderStatisticsUseCase: sl(),
+        searchProvidersLocationUseCase: sl(),
+      ));
+
+  // Moving
+  // Data sources
+  sl.registerLazySingleton<MovingRemoteDataSource>(
+    () => MovingRemoteDataSourceImpl(apiClient: sl()),
+  );
+
+  // Repository
+  sl.registerLazySingleton<MovingRepository>(
+    () => MovingRepositoryImpl(remoteDataSource: sl()),
+  );
+
+  // Use cases
+  sl.registerLazySingleton(() => CreateMovingRequestUseCase(sl()));
+  sl.registerLazySingleton(() => GetClientRequestsUseCase(sl()));
+  sl.registerLazySingleton(() => GetAllRequestsUseCase(sl()));
+  sl.registerLazySingleton(() => GetClientMovingsUseCase(sl()));
+  sl.registerLazySingleton(() => UpdateMovingStatusUseCase(sl()));
+  sl.registerLazySingleton(() => AssignProviderUseCase(sl()));
+
+  // Bloc
+  sl.registerFactory(() => MovingBloc(
+        createMovingRequestUseCase: sl(),
+        getClientRequestsUseCase: sl(),
+        getAllRequestsUseCase: sl(),
+        getClientMovingsUseCase: sl(),
+        updateMovingStatusUseCase: sl(),
+        assignProviderUseCase: sl(),
       ));
 }
