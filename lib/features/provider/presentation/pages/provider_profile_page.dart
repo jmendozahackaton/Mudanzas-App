@@ -27,11 +27,28 @@ class _ProviderProfilePageState extends State<ProviderProfilePage> {
   String _tipoCuenta = 'individual';
   int _radioServicio = 10;
   List<String> _metodosPago = [];
+  bool _isFormInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    context.read<ProviderBloc>().add(GetProviderProfileEvent());
+    // Solo cargar datos si no los tenemos ya
+    _initializeFromExistingState();
+  }
+
+  void _initializeFromExistingState() {
+    final currentState = context.read<ProviderBloc>().state;
+
+    if (currentState is ProviderDashboardLoaded) {
+      _initializeFormData(currentState.provider);
+      _isFormInitialized = true;
+    } else if (currentState is ProviderProfileLoaded) {
+      _initializeFormData(currentState.provider);
+      _isFormInitialized = true;
+    } else {
+      // Si no tenemos datos, cargarlos
+      context.read<ProviderBloc>().add(GetProviderProfileEvent());
+    }
   }
 
   @override
@@ -58,6 +75,7 @@ class _ProviderProfilePageState extends State<ProviderProfilePage> {
                 backgroundColor: Colors.green,
               ),
             );
+            Navigator.pop(context); // Regresar al dashboard después de guardar
           } else if (state is ProviderError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -68,88 +86,131 @@ class _ProviderProfilePageState extends State<ProviderProfilePage> {
           }
         },
         builder: (context, state) {
-          if (state is ProviderLoading) {
+          print('🎯 ProfilePage: Estado actual - ${state.runtimeType}');
+
+          // ✅ MANEJAR MULTIPLES ESTADOS
+          if (state is ProviderLoading && !_isFormInitialized) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (state is ProviderProfileLoaded) {
-            _initializeFormData(state.provider);
+          // ✅ INICIALIZAR FORMULARIO CON DATOS EXISTENTES
+          if (!_isFormInitialized) {
+            if (state is ProviderDashboardLoaded) {
+              _initializeFormData(state.provider);
+              _isFormInitialized = true;
+            } else if (state is ProviderProfileLoaded) {
+              _initializeFormData(state.provider);
+              _isFormInitialized = true;
+            } else if (state is ProviderError) {
+              return _buildErrorState(state.message);
+            }
           }
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildSectionTitle('Información Profesional'),
-                  _buildDropdown(
-                    value: _tipoCuenta,
-                    items: const ['individual', 'empresa'],
-                    label: 'Tipo de Cuenta',
-                    onChanged: (value) => setState(() => _tipoCuenta = value!),
-                  ),
-                  if (_tipoCuenta == 'empresa')
-                    _buildTextFormField(
-                      controller: _razonSocialController,
-                      label: 'Razón Social',
-                    ),
-                  _buildTextFormField(
-                    controller: _documentoController,
-                    label: 'Documento de Identidad',
-                  ),
-                  _buildTextFormField(
-                    controller: _licenciaController,
-                    label: 'Licencia de Conducir',
-                  ),
-                  _buildTextFormField(
-                    controller: _categoriaController,
-                    label: 'Categoría de Licencia',
-                  ),
-                  _buildTextFormField(
-                    controller: _seguroController,
-                    label: 'Seguro Vehicular',
-                  ),
-                  _buildTextFormField(
-                    controller: _polizaController,
-                    label: 'Póliza de Seguro',
-                  ),
-                  _buildSectionTitle('Configuración de Servicios'),
-                  _buildSlider(
-                    value: _radioServicio.toDouble(),
-                    min: 5,
-                    max: 50,
-                    divisions: 9,
-                    label: 'Radio de Servicio (km): $_radioServicio km',
-                    onChanged: (value) =>
-                        setState(() => _radioServicio = value.toInt()),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildTarifasSection(),
-                  const SizedBox(height: 16),
-                  _buildMetodosPagoSection(),
-                  const SizedBox(height: 32),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _saveProfile,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue.shade700,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                      child: const Text(
-                        'Guardar Cambios',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                    ),
-                  ),
-                ],
+          return _buildFormContent();
+        },
+      ),
+    );
+  }
+
+  Widget _buildFormContent() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildSectionTitle('Información Profesional'),
+            _buildDropdown(
+              value: _tipoCuenta,
+              items: const ['individual', 'empresa'],
+              label: 'Tipo de Cuenta',
+              onChanged: (value) => setState(() => _tipoCuenta = value!),
+            ),
+            if (_tipoCuenta == 'empresa')
+              _buildTextFormField(
+                controller: _razonSocialController,
+                label: 'Razón Social',
+              ),
+            _buildTextFormField(
+              controller: _documentoController,
+              label: 'Documento de Identidad',
+              validator: (value) => value?.isEmpty ?? true ? 'Requerido' : null,
+            ),
+            _buildTextFormField(
+              controller: _licenciaController,
+              label: 'Licencia de Conducir',
+              validator: (value) => value?.isEmpty ?? true ? 'Requerido' : null,
+            ),
+            _buildTextFormField(
+              controller: _categoriaController,
+              label: 'Categoría de Licencia',
+              validator: (value) => value?.isEmpty ?? true ? 'Requerido' : null,
+            ),
+            _buildTextFormField(
+              controller: _seguroController,
+              label: 'Seguro Vehicular',
+            ),
+            _buildTextFormField(
+              controller: _polizaController,
+              label: 'Póliza de Seguro',
+            ),
+            _buildSectionTitle('Configuración de Servicios'),
+            _buildSlider(
+              value: _radioServicio.toDouble(),
+              min: 5,
+              max: 50,
+              divisions: 9,
+              label: 'Radio de Servicio (km): $_radioServicio km',
+              onChanged: (value) =>
+                  setState(() => _radioServicio = value.toInt()),
+            ),
+            const SizedBox(height: 16),
+            _buildTarifasSection(),
+            const SizedBox(height: 16),
+            _buildMetodosPagoSection(),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _saveProfile,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue.shade700,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+                child: const Text(
+                  'Guardar Cambios',
+                  style: TextStyle(fontSize: 16),
+                ),
               ),
             ),
-          );
-        },
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorState(String message) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error, size: 64, color: Colors.red),
+          const SizedBox(height: 16),
+          Text(
+            'Error: $message',
+            style: const TextStyle(fontSize: 16),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () {
+              context.read<ProviderBloc>().add(GetProviderProfileEvent());
+            },
+            child: const Text('Reintentar'),
+          ),
+        ],
       ),
     );
   }
@@ -172,12 +233,14 @@ class _ProviderProfilePageState extends State<ProviderProfilePage> {
     required TextEditingController controller,
     required String label,
     TextInputType keyboardType = TextInputType.text,
+    String? Function(String?)? validator,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: TextFormField(
         controller: controller,
         keyboardType: keyboardType,
+        validator: validator,
         decoration: InputDecoration(
           labelText: label,
           border: OutlineInputBorder(
@@ -199,11 +262,11 @@ class _ProviderProfilePageState extends State<ProviderProfilePage> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: DropdownButtonFormField<String>(
-        //value: value,
+        value: value,
         items: items.map((String value) {
           return DropdownMenuItem<String>(
             value: value,
-            child: Text(value.toUpperCase()),
+            child: Text(_formatTipoCuenta(value)),
           );
         }).toList(),
         onChanged: onChanged,
@@ -217,6 +280,17 @@ class _ProviderProfilePageState extends State<ProviderProfilePage> {
         ),
       ),
     );
+  }
+
+  String _formatTipoCuenta(String tipo) {
+    switch (tipo) {
+      case 'individual':
+        return 'Individual';
+      case 'empresa':
+        return 'Empresa';
+      default:
+        return tipo;
+    }
   }
 
   Widget _buildSlider({
@@ -350,6 +424,8 @@ class _ProviderProfilePageState extends State<ProviderProfilePage> {
   }
 
   void _initializeFormData(provider) {
+    print('🎯 ProfilePage: Inicializando formulario con datos del proveedor');
+
     _tipoCuenta = provider.tipoCuenta;
     _razonSocialController.text = provider.razonSocial ?? '';
     _documentoController.text = provider.documentoIdentidad;
@@ -358,11 +434,14 @@ class _ProviderProfilePageState extends State<ProviderProfilePage> {
     _seguroController.text = provider.seguroVehicular ?? '';
     _polizaController.text = provider.polizaSeguro ?? '';
     _radioServicio = provider.radioServicio;
-    _tarifaBaseController.text = provider.tarifaBase.toString();
-    _tarifaKmController.text = provider.tarifaPorKm.toString();
-    _tarifaHoraController.text = provider.tarifaHora.toString();
-    _tarifaMinimaController.text = provider.tarifaMinima.toString();
+    _tarifaBaseController.text = provider.tarifaBase.toStringAsFixed(2);
+    _tarifaKmController.text = provider.tarifaPorKm.toStringAsFixed(2);
+    _tarifaHoraController.text = provider.tarifaHora.toStringAsFixed(2);
+    _tarifaMinimaController.text = provider.tarifaMinima.toStringAsFixed(2);
     _metodosPago = List<String>.from(provider.metodosPagoAceptados);
+
+    print(
+        '🎯 ProfilePage: Formulario inicializado - Tipo: $_tipoCuenta, Tarifa: ${_tarifaBaseController.text}');
   }
 
   void _saveProfile() {
@@ -386,6 +465,7 @@ class _ProviderProfilePageState extends State<ProviderProfilePage> {
         'metodos_pago_aceptados': _metodosPago,
       };
 
+      print('🎯 ProfilePage: Enviando datos de actualización: $updateData');
       context.read<ProviderBloc>().add(UpdateProviderProfileEvent(updateData));
     }
   }

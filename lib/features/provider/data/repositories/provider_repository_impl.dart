@@ -26,6 +26,20 @@ class ProviderRepositoryImpl implements ProviderRepository {
   }
 
   @override
+  Future<Either<Failure, ProviderEntity>> convertToProvider(
+      Map<String, dynamic> providerData) async {
+    try {
+      final providerModel =
+          await remoteDataSource.convertToProvider(providerData);
+      return Right(_mapModelToEntity(providerModel));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.toString()));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(e.toString()));
+    }
+  }
+
+  @override
   Future<Either<Failure, ProviderEntity>> getProviderProfile() async {
     try {
       final providerModel = await remoteDataSource.getProviderProfile();

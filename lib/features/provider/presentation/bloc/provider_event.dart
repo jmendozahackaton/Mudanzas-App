@@ -16,6 +16,15 @@ class RegisterProviderEvent extends ProviderEvent {
   List<Object> get props => [providerData];
 }
 
+class ConvertToProviderEvent extends ProviderEvent {
+  final Map<String, dynamic> providerData;
+
+  const ConvertToProviderEvent(this.providerData);
+
+  @override
+  List<Object> get props => [providerData];
+}
+
 class GetProviderProfileEvent extends ProviderEvent {}
 
 class UpdateProviderProfileEvent extends ProviderEvent {

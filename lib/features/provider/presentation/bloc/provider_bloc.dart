@@ -1,4 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../domain/entities/provider_entities.dart';
+import '../../domain/usecases/convert_to_provider_usecase.dart';
 import 'provider_event.dart';
 import 'provider_state.dart';
 import '../../domain/usecases/register_provider_usecase.dart';
@@ -11,6 +13,7 @@ import '../../domain/usecases/search_providers_location_usecase.dart';
 
 class ProviderBloc extends Bloc<ProviderEvent, ProviderState> {
   final RegisterProviderUseCase registerProviderUseCase;
+  final ConvertToProviderUseCase convertToProviderUseCase;
   final GetProviderProfileUseCase getProviderProfileUseCase;
   final UpdateProviderProfileUseCase updateProviderProfileUseCase;
   final UpdateProviderAvailabilityUseCase updateProviderAvailabilityUseCase;
@@ -18,8 +21,12 @@ class ProviderBloc extends Bloc<ProviderEvent, ProviderState> {
   final GetProviderStatisticsUseCase getProviderStatisticsUseCase;
   final SearchProvidersLocationUseCase searchProvidersLocationUseCase;
 
+  ProviderEntity? _cachedProvider;
+  ProviderStatisticsEntity? _cachedStatistics;
+
   ProviderBloc({
     required this.registerProviderUseCase,
+    required this.convertToProviderUseCase,
     required this.getProviderProfileUseCase,
     required this.updateProviderProfileUseCase,
     required this.updateProviderAvailabilityUseCase,
@@ -28,6 +35,7 @@ class ProviderBloc extends Bloc<ProviderEvent, ProviderState> {
     required this.searchProvidersLocationUseCase,
   }) : super(ProviderInitial()) {
     on<RegisterProviderEvent>(_onRegisterProvider);
+    on<ConvertToProviderEvent>(_onConvertToProvider);
     on<GetProviderProfileEvent>(_onGetProviderProfile);
     on<UpdateProviderProfileEvent>(_onUpdateProviderProfile);
     on<UpdateProviderAvailabilityEvent>(_onUpdateProviderAvailability);
@@ -50,17 +58,46 @@ class ProviderBloc extends Bloc<ProviderEvent, ProviderState> {
     );
   }
 
+  Future<void> _onConvertToProvider(
+    ConvertToProviderEvent event,
+    Emitter<ProviderState> emit,
+  ) async {
+    emit(ProviderLoading());
+
+    final result = await convertToProviderUseCase(event.providerData);
+
+    result.fold(
+      (failure) => emit(ProviderError(message: failure.toString())),
+      (provider) => emit(ProviderConverted(provider: provider)),
+    );
+  }
+
   Future<void> _onGetProviderProfile(
     GetProviderProfileEvent event,
     Emitter<ProviderState> emit,
   ) async {
-    emit(ProviderLoading());
+    // ✅ NO EMITIR LOADING SI YA ESTAMOS EN ESTADO DE ACTUALIZACIÓN
+    if (state is! ProviderLoading &&
+        state is! ProviderLocationUpdated &&
+        state is! ProviderAvailabilityUpdated) {
+      emit(ProviderLoading());
+    }
 
     final result = await getProviderProfileUseCase();
 
     result.fold(
       (failure) => emit(ProviderError(message: failure.toString())),
-      (provider) => emit(ProviderProfileLoaded(provider: provider)),
+      (provider) {
+        _cachedProvider = provider;
+        // ✅ SI YA TENEMOS ESTADÍSTICAS, EMITIR ESTADO COMBINADO
+        if (_cachedStatistics != null) {
+          emit(ProviderDashboardLoaded(
+            provider: provider,
+            statistics: _cachedStatistics!,
+          ));
+        }
+        // Si no, esperar a que las estadísticas se carguen
+      },
     );
   }
 
@@ -91,10 +128,19 @@ class ProviderBloc extends Bloc<ProviderEvent, ProviderState> {
 
     result.fold(
       (failure) => emit(ProviderError(message: failure.toString())),
-      (_) => emit(ProviderAvailabilityUpdated(
-        disponible: event.disponible,
-        modoOcupado: event.modoOcupado,
-      )),
+      (_) {
+        // ✅ EMITIR ESTADO DE ACTUALIZACIÓN
+        emit(ProviderAvailabilityUpdated(
+          disponible: event.disponible,
+          modoOcupado: event.modoOcupado,
+        ));
+
+        // ✅ USAR ADD PARA DISPARAR NUEVOS EVENTOS
+        Future.microtask(() {
+          add(GetProviderProfileEvent());
+          add(GetProviderStatisticsEvent());
+        });
+      },
     );
   }
 
@@ -108,7 +154,16 @@ class ProviderBloc extends Bloc<ProviderEvent, ProviderState> {
 
     result.fold(
       (failure) => emit(ProviderError(message: failure.toString())),
-      (_) => emit(ProviderLocationUpdated()),
+      (_) {
+        // ✅ EMITIR ESTADO DE ACTUALIZACIÓN
+        emit(ProviderLocationUpdated());
+
+        // ✅ USAR ADD PARA DISPARAR NUEVOS EVENTOS
+        Future.microtask(() {
+          add(GetProviderProfileEvent());
+          add(GetProviderStatisticsEvent());
+        });
+      },
     );
   }
 
@@ -116,13 +171,28 @@ class ProviderBloc extends Bloc<ProviderEvent, ProviderState> {
     GetProviderStatisticsEvent event,
     Emitter<ProviderState> emit,
   ) async {
-    emit(ProviderLoading());
+    // ✅ NO EMITIR LOADING SI YA ESTAMOS EN ESTADO DE ACTUALIZACIÓN
+    if (state is! ProviderLoading &&
+        state is! ProviderLocationUpdated &&
+        state is! ProviderAvailabilityUpdated) {
+      emit(ProviderLoading());
+    }
 
     final result = await getProviderStatisticsUseCase();
 
     result.fold(
       (failure) => emit(ProviderError(message: failure.toString())),
-      (statistics) => emit(ProviderStatisticsLoaded(statistics: statistics)),
+      (statistics) {
+        _cachedStatistics = statistics;
+        // ✅ SI YA TENEMOS EL PERFIL, EMITIR ESTADO COMBINADO
+        if (_cachedProvider != null) {
+          emit(ProviderDashboardLoaded(
+            provider: _cachedProvider!,
+            statistics: statistics,
+          ));
+        }
+        // Si no, esperar a que el perfil se cargue
+      },
     );
   }
 

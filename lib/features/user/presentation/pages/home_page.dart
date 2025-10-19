@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
-import '../../../../core/utils/routes.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
 
 class HomePage extends StatelessWidget {
@@ -12,17 +11,13 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
-        // ✅ ESCUCHAR AuthUnauthenticated PARA LOGOUT
         if (state is AuthUnauthenticated) {
-          print('🚪 Sesión cerrada - Redirigiendo a login');
           Navigator.pushNamedAndRemoveUntil(
             context,
             '/login',
-            (route) => false, // Remover todas las rutas
+            (route) => false,
           );
-        }
-        // ✅ TAMBIÉN MANEJAR ERRORES DURANTE LOGOUT
-        else if (state is AuthError) {
+        } else if (state is AuthError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),
@@ -32,7 +27,6 @@ class HomePage extends StatelessWidget {
         }
       },
       child: Scaffold(
-        // ✅ TU SCAFFOLD ACTUAL SE MANTIENE IGUAL
         backgroundColor: Colors.grey.shade50,
         appBar: AppBar(
           title: const Text('Mudanzas App'),
@@ -43,7 +37,7 @@ class HomePage extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.person),
               onPressed: () {
-                Navigator.pushNamed(context, AppRoutes.profile);
+                Navigator.pushNamed(context, '/profile');
               },
             ),
             IconButton(
@@ -54,133 +48,125 @@ class HomePage extends StatelessWidget {
             ),
           ],
         ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Welcome Section
-              _buildWelcomeSection(context),
-              const SizedBox(height: 32),
+        body: BlocBuilder<AuthBloc, AuthState>(
+          builder: (context, state) {
+            final user = state is AuthAuthenticated ? state.user : null;
 
-              // Quick Actions
-              _buildQuickActions(),
-              const SizedBox(height: 32),
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Welcome Section
+                  _buildWelcomeSection(user),
+                  const SizedBox(height: 32),
 
-              // Services Section
-              _buildServicesSection(),
-              const SizedBox(height: 32),
+                  // Mis Mudanzas Section - ✅ LLAMADA CORRECTA
+                  _buildMisMudanzasSection(),
+                  const SizedBox(height: 32),
 
-              // Recent Activity
-              _buildRecentActivity(),
-            ],
-          ),
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            _showNewRequestDialog(context);
+                  // Servicios Section
+                  _buildServiciosSection(),
+                  const SizedBox(height: 32),
+
+                  // Registro Proveedor (solo para clientes)
+                  if (user?.rol == 'cliente')
+                    _buildRegistroProveedorSection(context),
+                ],
+              ),
+            );
           },
-          backgroundColor: Colors.blue.shade700,
-          foregroundColor: Colors.white,
-          child: const Icon(Icons.add),
         ),
       ),
     );
   }
 
-  Widget _buildWelcomeSection(BuildContext context) {
-    return BlocBuilder<AuthBloc, AuthState>(
-      builder: (context, state) {
-        String userName = 'Usuario';
-        if (state is AuthAuthenticated) {
-          userName = state.user.nombre;
-        }
+  Widget _buildWelcomeSection(user) {
+    String userName = user?.nombre ?? 'Usuario';
+    String userEmail = user?.email ?? '';
 
-        return Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Colors.blue.shade700,
-                Colors.blue.shade500,
-              ],
-            ),
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.blue.withValues(alpha: 0.3),
-                blurRadius: 10,
-                offset: const Offset(0, 5),
-              ),
-            ],
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.blue.shade700,
+            Colors.blue.shade500,
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.blue.withAlpha(64),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              Text(
-                '¡Hola, $userName!',
-                style: const TextStyle(
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withAlpha(51),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.person,
                   color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+                  size: 24,
                 ),
               ),
-              const SizedBox(height: 8),
-              const Text(
-                '¿En qué podemos ayudarte hoy?',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 16,
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '¡Hola, $userName!',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      userEmail,
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 16),
-              // Stats Row
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _buildStatItem('3', 'Solicitudes'),
-                  _buildStatItem('1', 'En proceso'),
-                  _buildStatItem('2', 'Completadas'),
-                ],
               ),
             ],
           ),
-        );
-      },
+          const SizedBox(height: 16),
+          const Text(
+            '¿En qué podemos ayudarte hoy?',
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 16,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildStatItem(String value, String label) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Text(
-          label,
-          style: const TextStyle(
-            color: Colors.white70,
-            fontSize: 12,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildQuickActions() {
+  Widget _buildMisMudanzasSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Acciones Rápidas',
+          'Mis Mudanzas',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -195,38 +181,46 @@ class HomePage extends StatelessWidget {
           crossAxisSpacing: 16,
           mainAxisSpacing: 16,
           children: [
-            _buildActionCard(
-              Icons.local_shipping,
-              'Nueva Mudanza',
-              Colors.blue,
-              () {},
-            ),
-            _buildActionCard(
-              Icons.history,
-              'Historial',
-              Colors.green,
-              () {},
-            ),
-            _buildActionCard(
-              Icons.payment,
-              'Pagos',
-              Colors.orange,
-              () {},
-            ),
-            _buildActionCard(
-              Icons.chat,
-              'Soporte',
-              Colors.purple,
-              () {},
-            ),
+            Builder(
+                builder: (context) => _buildActionCard(
+                      Icons.add_circle,
+                      'Nueva Mudanza',
+                      'Solicitar servicio',
+                      Colors.green,
+                      () => Navigator.pushNamed(context, '/moving/request'),
+                    )),
+            Builder(
+                builder: (context) => _buildActionCard(
+                      Icons.list_alt,
+                      'Mis Solicitudes',
+                      'Ver mis solicitudes',
+                      Colors.blue,
+                      () => Navigator.pushNamed(context, '/client/requests'),
+                    )),
+            Builder(
+                builder: (context) => _buildActionCard(
+                      Icons.local_shipping,
+                      'Mis Mudanzas',
+                      'Seguimiento en curso',
+                      Colors.orange,
+                      () => Navigator.pushNamed(context, '/client/movings'),
+                    )),
+            Builder(
+                builder: (context) => _buildActionCard(
+                      Icons.location_on,
+                      'Seguimiento GPS',
+                      'Ubicación en tiempo real',
+                      Colors.purple,
+                      () => Navigator.pushNamed(context, '/moving/tracking'),
+                    )),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildActionCard(
-      IconData icon, String title, Color color, VoidCallback onTap) {
+  Widget _buildActionCard(IconData icon, String title, String subtitle,
+      Color color, VoidCallback onTap) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(
@@ -238,27 +232,31 @@ class HomePage extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(16),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
+                  color:
+                      Color.fromRGBO(color.red, color.green, color.blue, 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  icon,
-                  color: color,
-                  size: 24,
-                ),
+                child: Icon(icon, color: color, size: 24),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
               Text(
                 title,
-                textAlign: TextAlign.center,
                 style: const TextStyle(
-                  fontWeight: FontWeight.w500,
-                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontSize: 12,
                 ),
               ),
             ],
@@ -268,7 +266,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildServicesSection() {
+  Widget _buildServiciosSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -292,7 +290,8 @@ class HomePage extends StatelessWidget {
               _buildServiceItem(
                   'Transporte Local', Icons.local_shipping, Colors.orange),
               const SizedBox(width: 12),
-              _buildServiceItem('Embalaje', Icons.inventory_2, Colors.purple),
+              _buildServiceItem(
+                  'Embalaje Profesional', Icons.inventory_2, Colors.purple),
             ],
           ),
         ),
@@ -305,9 +304,10 @@ class HomePage extends StatelessWidget {
       width: 140,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: Color.fromRGBO(color.red, color.green, color.blue, 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
+        border: Border.all(
+            color: Color.fromRGBO(color.red, color.green, color.blue, 0.3)),
       ),
       child: Column(
         children: [
@@ -327,12 +327,12 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildRecentActivity() {
+  Widget _buildRegistroProveedorSection(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Actividad Reciente',
+          '¿Quieres ser Proveedor?',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -346,17 +346,53 @@ class HomePage extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
           ),
           child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
+            padding: const EdgeInsets.all(20),
+            child: Row(
               children: [
-                _buildActivityItem(
-                    'Mudanza a Nuevo Laredo', 'En proceso', Colors.orange),
-                const Divider(),
-                _buildActivityItem(
-                    'Traslado de oficina', 'Completado', Colors.green),
-                const Divider(),
-                _buildActivityItem(
-                    'Mudanza residencial', 'Pendiente', Colors.blue),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.purple.withAlpha(25),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.work_outline,
+                    color: Colors.purple,
+                    size: 32,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Ofrece tus servicios',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Regístrate como proveedor y comienza a aceptar mudanzas',
+                        style: TextStyle(
+                          color: Colors.grey.shade600,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 16),
+                ElevatedButton(
+                  onPressed: () => _showRegistroProveedorDialog(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.purple,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text('Registrarse'),
+                ),
               ],
             ),
           ),
@@ -365,27 +401,36 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildActivityItem(String title, String status, Color statusColor) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: Container(
-        width: 8,
-        height: 8,
-        decoration: BoxDecoration(
-          color: statusColor,
-          shape: BoxShape.circle,
+  void _showRegistroProveedorDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Registrarse como Proveedor'),
+        content: const Text(
+          'Al registrarte como proveedor podrás:\n\n'
+          '• Aceptar solicitudes de mudanza\n'
+          '• Generar ingresos con tus servicios\n'
+          '• Gestionar tu disponibilidad\n'
+          '• Recibir calificaciones de clientes\n\n'
+          '¿Deseas continuar con el registro?',
         ),
-      ),
-      title: Text(
-        title,
-        style: const TextStyle(fontWeight: FontWeight.w500),
-      ),
-      trailing: Text(
-        status,
-        style: TextStyle(
-          color: statusColor,
-          fontWeight: FontWeight.w500,
-        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/provider/register');
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.purple,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Continuar'),
+          ),
+        ],
       ),
     );
   }
@@ -410,22 +455,6 @@ class HomePage extends StatelessWidget {
               'Cerrar Sesión',
               style: TextStyle(color: Colors.red),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showNewRequestDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Nueva Solicitud'),
-        content: const Text('Funcionalidad en desarrollo'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
           ),
         ],
       ),

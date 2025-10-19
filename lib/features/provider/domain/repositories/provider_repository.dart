@@ -5,6 +5,8 @@ import '../entities/provider_entities.dart';
 abstract class ProviderRepository {
   Future<Either<Failure, ProviderEntity>> registerProvider(
       Map<String, dynamic> providerData);
+  Future<Either<Failure, ProviderEntity>> convertToProvider(
+      Map<String, dynamic> providerData);
   Future<Either<Failure, ProviderEntity>> getProviderProfile();
   Future<Either<Failure, ProviderEntity>> updateProviderProfile(
       Map<String, dynamic> updateData);

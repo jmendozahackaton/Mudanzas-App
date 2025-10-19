@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'features/admin/presentation/bloc/admin_bloc.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
+import 'features/moving/presentation/bloc/moving_bloc.dart';
+import 'features/provider/presentation/bloc/provider_bloc.dart';
 import 'features/user/presentation/bloc/user_bloc.dart';
 import 'injection_container.dart' as di;
 
@@ -32,6 +34,8 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (context) => di.sl<AuthBloc>()),
         BlocProvider(create: (context) => di.sl<UserBloc>()),
         BlocProvider(create: (context) => di.sl<AdminBloc>()),
+        BlocProvider(create: (context) => di.sl<ProviderBloc>()),
+        BlocProvider(create: (context) => di.sl<MovingBloc>()),
       ],
       child: MaterialApp(
         title: 'Mudanzas App',

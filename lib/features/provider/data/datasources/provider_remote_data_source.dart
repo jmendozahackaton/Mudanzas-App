@@ -5,6 +5,7 @@ import '../models/provider_models.dart';
 
 abstract class ProviderRemoteDataSource {
   Future<ProviderModel> registerProvider(Map<String, dynamic> providerData);
+  Future<ProviderModel> convertToProvider(Map<String, dynamic> providerData);
   Future<ProviderModel> getProviderProfile();
   Future<ProviderModel> updateProviderProfile(Map<String, dynamic> updateData);
   Future<void> updateProviderAvailability(bool disponible, bool modoOcupado);
@@ -51,6 +52,36 @@ class ProviderRemoteDataSourceImpl implements ProviderRemoteDataSource {
     } catch (e) {
       print('❌ Error registrando proveedor: $e');
       throw ServerException('Error registrando proveedor: $e');
+    }
+  }
+
+  @override
+  Future<ProviderModel> convertToProvider(
+      Map<String, dynamic> providerData) async {
+    try {
+      print('📤 Convirtiendo usuario a proveedor');
+
+      final response = await apiClient.post(
+        ApiConstants.providerConvert,
+        providerData,
+      );
+
+      print('📥 Convert to Provider response: $response');
+
+      if (response is Map<String, dynamic> &&
+          response['status'] == 'success' &&
+          response['data'] != null) {
+        final data = response['data'] as Map<String, dynamic>;
+        return ProviderModel.fromJson(data['proveedor']);
+      } else {
+        throw ServerException(
+            response['message'] ?? 'Error en conversión a proveedor');
+      }
+    } on ServerException {
+      rethrow;
+    } catch (e) {
+      print('❌ Error convirtiendo a proveedor: $e');
+      throw ServerException('Error convirtiendo a proveedor: $e');
     }
   }
 
@@ -119,8 +150,8 @@ class ProviderRemoteDataSourceImpl implements ProviderRemoteDataSource {
       final response = await apiClient.put(
         ApiConstants.providerAvailability,
         {
-          'disponible': disponible,
-          'modo_ocupado': modoOcupado,
+          'disponible': disponible ? 1 : 0,
+          'modo_ocupado': modoOcupado ? 1 : 0,
         },
       );
 

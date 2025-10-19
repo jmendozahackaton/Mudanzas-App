@@ -12,6 +12,7 @@ import 'features/auth/domain/usecases/logout_usecase.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 
 // User
+import 'features/provider/domain/usecases/convert_to_provider_usecase.dart';
 import 'features/user/data/datasources/user_remote_data_source.dart';
 import 'features/user/data/repositories/user_repository_impl.dart';
 import 'features/user/domain/repositories/user_repository.dart';
@@ -156,6 +157,7 @@ Future<void> init() async {
   // Use cases
   sl.registerLazySingleton(() => RegisterProviderUseCase(sl()));
   sl.registerLazySingleton(() => GetProviderProfileUseCase(sl()));
+  sl.registerLazySingleton(() => ConvertToProviderUseCase(sl()));
   sl.registerLazySingleton(() => UpdateProviderProfileUseCase(sl()));
   sl.registerLazySingleton(() => UpdateProviderAvailabilityUseCase(sl()));
   sl.registerLazySingleton(() => UpdateProviderLocationUseCase(sl()));
@@ -165,6 +167,7 @@ Future<void> init() async {
   // Bloc
   sl.registerFactory(() => ProviderBloc(
         registerProviderUseCase: sl(),
+        convertToProviderUseCase: sl(),
         getProviderProfileUseCase: sl(),
         updateProviderProfileUseCase: sl(),
         updateProviderAvailabilityUseCase: sl(),

@@ -20,6 +20,7 @@ class ApiConstants {
 
   // Provider endpoints
   static const String providerRegister = '/api/provider/register';
+  static const String providerConvert = '/api/provider/convert';
   static const String providerProfile = '/api/provider/profile';
   static const String providerAvailability = '/api/provider/availability';
   static const String providerLocation = '/api/provider/location';

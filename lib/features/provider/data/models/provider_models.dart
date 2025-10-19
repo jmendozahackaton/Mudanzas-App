@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:equatable/equatable.dart';
 
 class ProviderModel extends Equatable {
@@ -14,6 +16,7 @@ class ProviderModel extends Equatable {
   final String licenciaConducir;
   final String categoriaLicencia;
   final String? seguroVehicular;
+  final String? polizaSeguro;
   final String estadoVerificacion;
   final String nivelProveedor;
   final double puntuacionPromedio;
@@ -24,6 +27,7 @@ class ProviderModel extends Equatable {
   final double comisionAcumulada;
   final DateTime fechaRegistro;
   final DateTime? fechaVerificacion;
+  final DateTime? fechaRenovacion;
   final int radioServicio;
   final double tarifaBase;
   final double tarifaPorKm;
@@ -51,6 +55,7 @@ class ProviderModel extends Equatable {
     required this.licenciaConducir,
     required this.categoriaLicencia,
     this.seguroVehicular,
+    this.polizaSeguro,
     required this.estadoVerificacion,
     required this.nivelProveedor,
     required this.puntuacionPromedio,
@@ -61,6 +66,7 @@ class ProviderModel extends Equatable {
     required this.comisionAcumulada,
     required this.fechaRegistro,
     this.fechaVerificacion,
+    this.fechaRenovacion,
     required this.radioServicio,
     required this.tarifaBase,
     required this.tarifaPorKm,
@@ -76,49 +82,112 @@ class ProviderModel extends Equatable {
   });
 
   factory ProviderModel.fromJson(Map<String, dynamic> json) {
+    // Función helper para parsear números de forma segura
+    double safeParseDouble(dynamic value) {
+      if (value == null) return 0.0;
+      if (value is double) return value;
+      if (value is int) return value.toDouble();
+      if (value is String) {
+        try {
+          return double.parse(value);
+        } catch (e) {
+          return 0.0;
+        }
+      }
+      return 0.0;
+    }
+
+    int safeParseInt(dynamic value) {
+      if (value == null) return 0;
+      if (value is int) return value;
+      if (value is double) return value.toInt();
+      if (value is String) {
+        try {
+          return int.parse(value);
+        } catch (e) {
+          return 0;
+        }
+      }
+      return 0;
+    }
+
+    bool safeParseBool(dynamic value) {
+      if (value == null) return false;
+      if (value is bool) return value;
+      if (value is int) return value == 1;
+      if (value is String) {
+        return value.toLowerCase() == 'true' || value == '1';
+      }
+      return false;
+    }
+
+    // Parsear lista de métodos de pago de forma segura - CORREGIDO
+    List<String> parseMetodosPago(dynamic value) {
+      if (value == null) return [];
+      if (value is List) {
+        return value.map((e) => e.toString()).toList();
+      }
+      if (value is String) {
+        try {
+          final parsed = jsonDecode(value) as List; // ✅ Cambiado a jsonDecode
+          return parsed.map((e) => e.toString()).toList();
+        } catch (e) {
+          return [];
+        }
+      }
+      return [];
+    }
+
     return ProviderModel(
-      id: json['id'],
-      usuarioId: json['usuario_id'],
-      nombre: json['nombre'],
-      apellido: json['apellido'],
-      email: json['email'],
-      telefono: json['telefono'],
-      fotoPerfil: json['foto_perfil'],
-      tipoCuenta: json['tipo_cuenta'],
-      razonSocial: json['razon_social'],
-      documentoIdentidad: json['documento_identidad'],
-      licenciaConducir: json['licencia_conducir'],
-      categoriaLicencia: json['categoria_licencia'],
-      seguroVehicular: json['seguro_vehicular'],
-      estadoVerificacion: json['estado_verificacion'],
-      nivelProveedor: json['nivel_proveedor'],
-      puntuacionPromedio:
-          (json['puntuacion_promedio'] as num?)?.toDouble() ?? 0.0,
-      totalServicios: json['total_servicios'] ?? 0,
-      serviciosCompletados: json['servicios_completados'] ?? 0,
-      serviciosCancelados: json['servicios_cancelados'] ?? 0,
-      ingresosTotales: (json['ingresos_totales'] as num?)?.toDouble() ?? 0.0,
-      comisionAcumulada:
-          (json['comision_acumulada'] as num?)?.toDouble() ?? 0.0,
-      fechaRegistro: DateTime.parse(json['fecha_registro']),
+      id: safeParseInt(json['id']),
+      usuarioId: safeParseInt(json['usuario_id']),
+      nombre: json['nombre']?.toString() ?? '',
+      apellido: json['apellido']?.toString() ?? '',
+      email: json['email']?.toString() ?? '',
+      telefono: json['telefono']?.toString(),
+      fotoPerfil: json['foto_perfil']?.toString(),
+      tipoCuenta: json['tipo_cuenta']?.toString() ?? 'individual',
+      razonSocial: json['razon_social']?.toString(),
+      documentoIdentidad: json['documento_identidad']?.toString() ?? '',
+      licenciaConducir: json['licencia_conducir']?.toString() ?? '',
+      categoriaLicencia: json['categoria_licencia']?.toString() ?? '',
+      seguroVehicular: json['seguro_vehicular']?.toString(),
+      polizaSeguro: json['poliza_seguro']?.toString(),
+      estadoVerificacion:
+          json['estado_verificacion']?.toString() ?? 'pendiente',
+      nivelProveedor: json['nivel_proveedor']?.toString() ?? 'bronce',
+      puntuacionPromedio: safeParseDouble(json['puntuacion_promedio']),
+      totalServicios: safeParseInt(json['total_servicios']),
+      serviciosCompletados: safeParseInt(json['servicios_completados']),
+      serviciosCancelados: safeParseInt(json['servicios_cancelados']),
+      ingresosTotales: safeParseDouble(json['ingresos_totales']),
+      comisionAcumulada: safeParseDouble(json['comision_acumulada']),
+      fechaRegistro: DateTime.parse(
+          json['fecha_registro']?.toString() ?? DateTime.now().toString()),
       fechaVerificacion: json['fecha_verificacion'] != null
-          ? DateTime.parse(json['fecha_verificacion'])
+          ? DateTime.tryParse(json['fecha_verificacion'].toString())
           : null,
-      radioServicio: json['radio_servicio'] ?? 10,
-      tarifaBase: (json['tarifa_base'] as num?)?.toDouble() ?? 0.0,
-      tarifaPorKm: (json['tarifa_por_km'] as num?)?.toDouble() ?? 0.0,
-      tarifaHora: (json['tarifa_hora'] as num?)?.toDouble() ?? 0.0,
-      tarifaMinima: (json['tarifa_minima'] as num?)?.toDouble() ?? 0.0,
-      disponible: json['disponible'] ?? false,
-      modoOcupado: json['modo_ocupado'] ?? false,
-      enServicio: json['en_servicio'] ?? false,
-      ultimaUbicacionLat: (json['ultima_ubicacion_lat'] as num?)?.toDouble(),
-      ultimaUbicacionLng: (json['ultima_ubicacion_lng'] as num?)?.toDouble(),
+      fechaRenovacion: json['fecha_renovacion'] != null
+          ? DateTime.tryParse(json['fecha_renovacion'].toString())
+          : null,
+      radioServicio: safeParseInt(json['radio_servicio']),
+      tarifaBase: safeParseDouble(json['tarifa_base']),
+      tarifaPorKm: safeParseDouble(json['tarifa_por_km']),
+      tarifaHora: safeParseDouble(json['tarifa_hora']),
+      tarifaMinima: safeParseDouble(json['tarifa_minima']),
+      disponible: safeParseBool(json['disponible']),
+      modoOcupado: safeParseBool(json['modo_ocupado']),
+      enServicio: safeParseBool(json['en_servicio']),
+      ultimaUbicacionLat: json['ultima_ubicacion_lat'] != null
+          ? safeParseDouble(json['ultima_ubicacion_lat'])
+          : null,
+      ultimaUbicacionLng: json['ultima_ubicacion_lng'] != null
+          ? safeParseDouble(json['ultima_ubicacion_lng'])
+          : null,
       ultimaActualizacion: json['ultima_actualizacion'] != null
-          ? DateTime.parse(json['ultima_actualizacion'])
+          ? DateTime.tryParse(json['ultima_actualizacion'].toString())
           : null,
-      metodosPagoAceptados:
-          List<String>.from(json['metodos_pago_aceptados'] ?? []),
+      metodosPagoAceptados: parseMetodosPago(json['metodos_pago_aceptados']),
     );
   }
 

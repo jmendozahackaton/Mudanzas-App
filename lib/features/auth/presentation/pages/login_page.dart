@@ -14,16 +14,22 @@ class LoginPage extends StatelessWidget {
       body: SafeArea(
         child: BlocListener<AuthBloc, AuthState>(
           listener: (context, state) {
-            // ✅ AGREGAR MANEJO DE AuthAuthenticated
             if (state is AuthAuthenticated) {
               print(
                   '✅ Login exitoso - Redirigiendo según rol: ${state.user.rol}');
 
               // Navegar según el rol del usuario
-              if (state.user.rol == 'admin') {
-                Navigator.pushReplacementNamed(context, '/admin');
-              } else {
-                Navigator.pushReplacementNamed(context, '/home');
+              switch (state.user.rol) {
+                case 'admin':
+                  Navigator.pushReplacementNamed(context, '/admin');
+                  break;
+                case 'proveedor':
+                  Navigator.pushReplacementNamed(
+                      context, '/provider/dashboard');
+                  break;
+                case 'cliente':
+                default:
+                  Navigator.pushReplacementNamed(context, '/home');
               }
             }
             // ✅ MANTENER MANEJO DE ERRORES

@@ -276,34 +276,30 @@ class _AdminDashboardState extends State<AdminDashboard> {
           children: [
             _buildAdminActionCard(
               Icons.people,
-              'Gestión de Usuarios',
+              'Gestión Usuarios',
               Colors.blue,
-              () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const UsersManagementPage(),
-                  ),
-                );
-              },
+              () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const UsersManagementPage()),
+              ),
             ),
             _buildAdminActionCard(
               Icons.local_shipping,
-              'Mudanzas',
+              'Gestión Mudanzas',
               Colors.green,
-              () {},
+              () => _showMovingManagement(context),
+            ),
+            _buildAdminActionCard(
+              Icons.work,
+              'Gestión Proveedores',
+              Colors.orange,
+              () => _showProviderManagement(context),
             ),
             _buildAdminActionCard(
               Icons.bar_chart,
               'Reportes',
-              Colors.orange,
-              () {},
-            ),
-            _buildAdminActionCard(
-              Icons.settings,
-              'Configuración',
               Colors.purple,
-              () {},
+              () => _showReports(context),
             ),
           ],
         ),
@@ -441,6 +437,33 @@ class _AdminDashboardState extends State<AdminDashboard> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showMovingManagement(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Gestión de mudanzas - Funcionalidad en desarrollo'),
+        backgroundColor: Colors.blue,
+      ),
+    );
+  }
+
+  void _showProviderManagement(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Gestión de proveedores - Funcionalidad en desarrollo'),
+        backgroundColor: Colors.orange,
+      ),
+    );
+  }
+
+  void _showReports(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Reportes y analytics - Funcionalidad en desarrollo'),
+        backgroundColor: Colors.purple,
       ),
     );
   }

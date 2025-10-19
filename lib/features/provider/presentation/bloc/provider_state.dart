@@ -39,6 +39,15 @@ class ProviderRegistered extends ProviderState {
   List<Object> get props => [provider];
 }
 
+class ProviderConverted extends ProviderState {
+  final ProviderEntity provider;
+
+  const ProviderConverted({required this.provider});
+
+  @override
+  List<Object> get props => [provider];
+}
+
 class ProviderAvailabilityUpdated extends ProviderState {
   final bool disponible;
   final bool modoOcupado;
@@ -96,4 +105,17 @@ class ProviderError extends ProviderState {
 
   @override
   List<Object> get props => [message];
+}
+
+class ProviderDashboardLoaded extends ProviderState {
+  final ProviderEntity provider;
+  final ProviderStatisticsEntity statistics;
+
+  const ProviderDashboardLoaded({
+    required this.provider,
+    required this.statistics,
+  });
+
+  @override
+  List<Object> get props => [provider, statistics];
 }

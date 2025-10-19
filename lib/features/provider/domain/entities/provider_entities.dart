@@ -12,6 +12,7 @@ class ProviderEntity {
   final String licenciaConducir;
   final String categoriaLicencia;
   final String? seguroVehicular;
+  final String? polizaSeguro;
   final String estadoVerificacion;
   final String nivelProveedor;
   final double puntuacionPromedio;
@@ -49,6 +50,7 @@ class ProviderEntity {
     required this.licenciaConducir,
     required this.categoriaLicencia,
     this.seguroVehicular,
+    this.polizaSeguro,
     required this.estadoVerificacion,
     required this.nivelProveedor,
     required this.puntuacionPromedio,

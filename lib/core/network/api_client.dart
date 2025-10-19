@@ -65,9 +65,14 @@ class ApiClient {
 
   Future<dynamic> put(String endpoint, dynamic data) async {
     try {
+      print('🚀 ApiClient: PUT $endpoint');
+      print('📦 ApiClient: Data enviada - $data');
       final response = await _dio.put(endpoint, data: data);
+      print('📥 ApiClient: Response recibida - ${response.data}');
       return _parseResponse(response.data);
     } on DioException catch (error) {
+      print('❌ ApiClient: Error en PUT $endpoint');
+      print('❌ ApiClient: Data enviada - $data');
       throw _handleError(error);
     }
   }

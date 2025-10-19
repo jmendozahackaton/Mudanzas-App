@@ -32,13 +32,28 @@ class _SplashScreenState extends State<SplashScreen> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthAuthenticated) {
-          // Navigate to home based on user role
-          if (state.user.rol == 'admin') {
-            Navigator.pushReplacementNamed(context, '/admin');
-          } else {
-            Navigator.pushReplacementNamed(context, '/home');
+          print('🎯 Splash: Usuario autenticado - Rol: ${state.user.rol}');
+
+          // Navegar según el rol del usuario
+          switch (state.user.rol) {
+            case 'admin':
+              print('🎯 Splash: Redirigiendo a Admin Dashboard');
+              Navigator.pushReplacementNamed(context, '/admin');
+              break;
+            case 'proveedor':
+              print('🎯 Splash: Redirigiendo a Provider Dashboard');
+              Navigator.pushReplacementNamed(context, '/provider/dashboard');
+              break;
+            case 'cliente':
+            default:
+              print('🎯 Splash: Redirigiendo a Home Cliente');
+              Navigator.pushReplacementNamed(context, '/home');
           }
         } else if (state is AuthUnauthenticated) {
+          print('🎯 Splash: Usuario no autenticado - Redirigiendo a Login');
+          Navigator.pushReplacementNamed(context, '/login');
+        } else if (state is AuthError) {
+          print('🎯 Splash: Error de autenticación - ${state.message}');
           Navigator.pushReplacementNamed(context, '/login');
         }
       },
