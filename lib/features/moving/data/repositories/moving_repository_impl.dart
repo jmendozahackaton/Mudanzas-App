@@ -31,7 +31,10 @@ class MovingRepositoryImpl implements MovingRepository {
     try {
       final response =
           await remoteDataSource.getClientRequests(page: page, limit: limit);
+
+      // ✅ SIMPLE: Usar la respuesta ya procesada del data source
       final requests = response.requests.map(_mapRequestModelToEntity).toList();
+
       return Right(MovingRequestListEntity(
         requests: requests,
         pagination: PaginationEntity(

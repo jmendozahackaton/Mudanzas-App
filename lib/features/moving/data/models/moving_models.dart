@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:equatable/equatable.dart';
 
 import '../../../provider/data/models/provider_models.dart';
@@ -54,34 +56,99 @@ class MovingRequestModel extends Equatable {
   });
 
   factory MovingRequestModel.fromJson(Map<String, dynamic> json) {
+    // Función helper para parsear arrays de forma segura
+    List<String> parseStringList(dynamic value) {
+      if (value == null) return [];
+      if (value is List) {
+        return value.map((e) => e.toString()).toList();
+      }
+      if (value is String) {
+        try {
+          // Intentar parsear el string como JSON
+          final parsed = jsonDecode(value) as List;
+          return parsed.map((e) => e.toString()).toList();
+        } catch (e) {
+          // Si falla, devolver lista vacía
+          return [];
+        }
+      }
+      return [];
+    }
+
+    // Función helper para parsear números de forma segura
+    double safeParseDouble(dynamic value) {
+      if (value == null) return 0.0;
+      if (value is double) return value;
+      if (value is int) return value.toDouble();
+      if (value is String) {
+        try {
+          return double.parse(value);
+        } catch (e) {
+          return 0.0;
+        }
+      }
+      return 0.0;
+    }
+
+    // Función helper para parsear enteros de forma segura
+    int safeParseInt(dynamic value) {
+      if (value == null) return 0;
+      if (value is int) return value;
+      if (value is double) return value.toInt();
+      if (value is String) {
+        try {
+          return int.parse(value);
+        } catch (e) {
+          return 0;
+        }
+      }
+      return 0;
+    }
+
+    // Función helper para parsear fechas de forma segura
+    DateTime safeParseDateTime(dynamic value) {
+      if (value == null) return DateTime.now();
+      if (value is DateTime) return value;
+      if (value is String) {
+        try {
+          return DateTime.parse(value);
+        } catch (e) {
+          return DateTime.now();
+        }
+      }
+      return DateTime.now();
+    }
+
     return MovingRequestModel(
-      id: json['id'],
-      clienteId: json['cliente_id'],
-      codigoSolicitud: json['codigo_solicitud'],
-      direccionOrigen: json['direccion_origen'],
-      direccionDestino: json['direccion_destino'],
-      latOrigen: (json['lat_origen'] as num?)?.toDouble(),
-      lngOrigen: (json['lng_origen'] as num?)?.toDouble(),
-      latDestino: (json['lat_destino'] as num?)?.toDouble(),
-      lngDestino: (json['lng_destino'] as num?)?.toDouble(),
-      descripcionItems: json['descripcion_items'] ?? '',
-      tipoItems: List<String>.from(json['tipo_items'] ?? []),
-      volumenEstimado: (json['volumen_estimado'] as num?)?.toDouble() ?? 0.0,
-      serviciosAdicionales:
-          List<String>.from(json['servicios_adicionales'] ?? []),
-      urgencia: json['urgencia'] ?? 'normal',
-      fechaSolicitud: DateTime.parse(json['fecha_solicitud']),
-      fechaProgramada: DateTime.parse(json['fecha_programada']),
-      estado: json['estado'],
-      cotizacionEstimada:
-          (json['cotizacion_estimada'] as num?)?.toDouble() ?? 0.0,
-      distanciaEstimada:
-          (json['distancia_estimada'] as num?)?.toDouble() ?? 0.0,
-      tiempoEstimado: json['tiempo_estimado'] ?? 0,
+      id: safeParseInt(json['id']),
+      clienteId: safeParseInt(json['cliente_id']),
+      codigoSolicitud: json['codigo_solicitud']?.toString() ?? '',
+      direccionOrigen: json['direccion_origen']?.toString() ?? '',
+      direccionDestino: json['direccion_destino']?.toString() ?? '',
+      latOrigen: safeParseDouble(json['lat_origen']),
+      lngOrigen: safeParseDouble(json['lng_origen']),
+      latDestino: safeParseDouble(json['lat_destino']),
+      lngDestino: safeParseDouble(json['lng_destino']),
+      descripcionItems: json['descripcion_items']?.toString() ?? '',
+
+      // ✅ CORREGIDO: Usar el parser seguro
+      tipoItems: parseStringList(json['tipo_items']),
+      volumenEstimado: safeParseDouble(json['volumen_estimado']),
+      serviciosAdicionales: parseStringList(json['servicios_adicionales']),
+
+      urgencia: json['urgencia']?.toString() ?? 'normal',
+      fechaSolicitud: safeParseDateTime(json['fecha_solicitud']),
+      fechaProgramada: safeParseDateTime(json['fecha_programada']),
+      estado: json['estado']?.toString() ?? 'pendiente',
+      cotizacionEstimada: safeParseDouble(json['cotizacion_estimada']),
+      distanciaEstimada: safeParseDouble(json['distancia_estimada']),
+      tiempoEstimado: safeParseInt(json['tiempo_estimado']),
       tieneMudanzaAsignada: json['tiene_mudanza_asignada'] == 1 ||
-          json['tiene_mudanza_asignada'] == true,
-      clienteNombre: json['cliente_nombre'],
-      clienteApellido: json['cliente_apellido'],
+          json['tiene_mudanza_asignada'] == true ||
+          (json['tiene_mudanza_asignada'] is String &&
+              json['tiene_mudanza_asignada'] == '1'),
+      clienteNombre: json['cliente_nombre']?.toString(),
+      clienteApellido: json['cliente_apellido']?.toString(),
     );
   }
 
@@ -171,39 +238,76 @@ class MovingModel extends Equatable {
   });
 
   factory MovingModel.fromJson(Map<String, dynamic> json) {
+    // Reutilizar las mismas funciones helper
+    double safeParseDouble(dynamic value) {
+      if (value == null) return 0.0;
+      if (value is double) return value;
+      if (value is int) return value.toDouble();
+      if (value is String) {
+        try {
+          return double.parse(value);
+        } catch (e) {
+          return 0.0;
+        }
+      }
+      return 0.0;
+    }
+
+    int safeParseInt(dynamic value) {
+      if (value == null) return 0;
+      if (value is int) return value;
+      if (value is double) return value.toInt();
+      if (value is String) {
+        try {
+          return int.parse(value);
+        } catch (e) {
+          return 0;
+        }
+      }
+      return 0;
+    }
+
+    DateTime? safeParseDateTime(dynamic value) {
+      if (value == null) return null;
+      if (value is DateTime) return value;
+      if (value is String) {
+        try {
+          return DateTime.parse(value);
+        } catch (e) {
+          return null;
+        }
+      }
+      return null;
+    }
+
     return MovingModel(
-      id: json['id'],
-      solicitudId: json['solicitud_id'],
-      clienteId: json['cliente_id'],
-      proveedorId: json['proveedor_id'],
-      codigoMudanza: json['codigo_mudanza'],
-      estado: json['estado'],
-      prioridad: json['prioridad'] ?? 'normal',
-      fechaSolicitud: DateTime.parse(json['fecha_solicitud']),
-      fechaAsignacion: json['fecha_asignacion'] != null
-          ? DateTime.parse(json['fecha_asignacion'])
-          : null,
-      fechaInicio: json['fecha_inicio'] != null
-          ? DateTime.parse(json['fecha_inicio'])
-          : null,
-      fechaCompletacion: json['fecha_completacion'] != null
-          ? DateTime.parse(json['fecha_completacion'])
-          : null,
-      costoBase: (json['costo_base'] as num).toDouble(),
-      costoAdicional: (json['costo_adicional'] as num?)?.toDouble() ?? 0.0,
-      costoTotal: (json['costo_total'] as num).toDouble(),
-      comisionPlataforma: (json['comision_plataforma'] as num).toDouble(),
-      distanciaReal: (json['distancia_real'] as num?)?.toDouble(),
-      tiempoReal: json['tiempo_real'],
-      calificacionCliente: json['calificacion_cliente'],
-      calificacionProveedor: json['calificacion_proveedor'],
-      notas: json['notas'],
-      direccionOrigen: json['direccion_origen'],
-      direccionDestino: json['direccion_destino'],
-      clienteNombre: json['cliente_nombre'],
-      clienteApellido: json['cliente_apellido'],
-      proveedorNombre: json['proveedor_nombre'],
-      proveedorApellido: json['proveedor_apellido'],
+      id: safeParseInt(json['id']),
+      solicitudId: safeParseInt(json['solicitud_id']),
+      clienteId: safeParseInt(json['cliente_id']),
+      proveedorId: safeParseInt(json['proveedor_id']),
+      codigoMudanza: json['codigo_mudanza']?.toString() ?? '',
+      estado: json['estado']?.toString() ?? '',
+      prioridad: json['prioridad']?.toString() ?? 'normal',
+      fechaSolicitud:
+          safeParseDateTime(json['fecha_solicitud']) ?? DateTime.now(),
+      fechaAsignacion: safeParseDateTime(json['fecha_asignacion']),
+      fechaInicio: safeParseDateTime(json['fecha_inicio']),
+      fechaCompletacion: safeParseDateTime(json['fecha_completacion']),
+      costoBase: safeParseDouble(json['costo_base']),
+      costoAdicional: safeParseDouble(json['costo_adicional']),
+      costoTotal: safeParseDouble(json['costo_total']),
+      comisionPlataforma: safeParseDouble(json['comision_plataforma']),
+      distanciaReal: safeParseDouble(json['distancia_real']),
+      tiempoReal: safeParseInt(json['tiempo_real']),
+      calificacionCliente: safeParseInt(json['calificacion_cliente']),
+      calificacionProveedor: safeParseInt(json['calificacion_proveedor']),
+      notas: json['notas']?.toString(),
+      direccionOrigen: json['direccion_origen']?.toString() ?? '',
+      direccionDestino: json['direccion_destino']?.toString() ?? '',
+      clienteNombre: json['cliente_nombre']?.toString(),
+      clienteApellido: json['cliente_apellido']?.toString(),
+      proveedorNombre: json['proveedor_nombre']?.toString(),
+      proveedorApellido: json['proveedor_apellido']?.toString(),
     );
   }
 

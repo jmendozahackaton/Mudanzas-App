@@ -1,6 +1,7 @@
 import '../../../../core/errors/exceptions.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/api_constants.dart';
+import '../../../provider/data/models/provider_models.dart';
 import '../models/moving_models.dart';
 
 abstract class MovingRemoteDataSource {
@@ -70,7 +71,21 @@ class MovingRemoteDataSourceImpl implements MovingRemoteDataSource {
           response['status'] == 'success' &&
           response['data'] != null) {
         final data = response['data'] as Map<String, dynamic>;
-        return MovingRequestListResponse.fromJson(data);
+
+        // ✅ CORREGIDO: El backend solo devuelve solicitudes, crear paginación por defecto
+        final requests = (data['solicitudes'] as List)
+            .map((request) => MovingRequestModel.fromJson(request))
+            .toList();
+
+        return MovingRequestListResponse(
+          requests: requests,
+          pagination: PaginationModel(
+            page: page,
+            limit: limit,
+            total: requests.length, // Total temporal
+            pages: 1, // Solo una página por ahora
+          ),
+        );
       } else {
         throw ServerException(
             response['message'] ?? 'Error obteniendo solicitudes');
