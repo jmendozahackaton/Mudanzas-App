@@ -3,6 +3,10 @@ import '../constants/app_constants.dart';
 class ApiConstants {
   static const String baseUrl = AppConstants.baseUrl;
 
+  // Health check & Test endpoints
+  static const String health = '/api/health';
+  static const String test = '/api/test';
+
   // Auth endpoints
   static const String login = '/api/auth/login';
   static const String register = '/api/auth/register';
@@ -17,6 +21,10 @@ class ApiConstants {
   static const String adminUsersSearch = '/api/admin/users/search';
   static const String adminUsersSingle = '/api/admin/users/single';
   static const String adminUsersProfile = '/api/admin/users/profile';
+
+  // Client endpoints
+  static const String clientEnsure = '/api/client/ensure';
+  static const String clientStatistics = '/api/client/statistics';
 
   // Provider endpoints
   static const String providerRegister = '/api/provider/register';

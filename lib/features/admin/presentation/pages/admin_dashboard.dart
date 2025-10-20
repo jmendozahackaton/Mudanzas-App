@@ -6,6 +6,7 @@ import '../../../auth/presentation/bloc/auth_state.dart';
 import '../bloc/admin_bloc.dart';
 import '../bloc/admin_event.dart';
 import '../bloc/admin_state.dart';
+import 'MovingManagementPage.dart';
 import 'users_management_page.dart';
 
 class AdminDashboard extends StatefulWidget {
@@ -287,7 +288,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
               Icons.local_shipping,
               'Gestión Mudanzas',
               Colors.green,
-              () => _showMovingManagement(context),
+              () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const MovingManagementPage()),
+              ),
             ),
             _buildAdminActionCard(
               Icons.work,
@@ -437,15 +441,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  void _showMovingManagement(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Gestión de mudanzas - Funcionalidad en desarrollo'),
-        backgroundColor: Colors.blue,
       ),
     );
   }
