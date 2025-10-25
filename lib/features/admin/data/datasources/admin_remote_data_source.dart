@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import '../../../../core/errors/exceptions.dart';
 import '../../../../core/network/api_client.dart';
+import '../../../../core/network/api_constants.dart';
+import '../../../provider/data/models/provider_models.dart';
 import '../../domain/entities/admin_entities.dart';
 import '../models/admin_models.dart';
 
@@ -17,6 +19,7 @@ abstract class AdminRemoteDataSource {
 
   Future<UserModel> getUserById({required int userId});
   Future<UserModel> updateUserProfile({required UserEntity user});
+  Future<ProviderListResponse> getProviders({int page = 1, int limit = 10});
 }
 
 class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
@@ -265,6 +268,32 @@ class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
     } catch (e) {
       print('❌ Error actualizando perfil: $e');
       throw ServerException('Error actualizando perfil: $e');
+    }
+  }
+
+  @override
+  Future<ProviderListResponse> getProviders(
+      {int page = 1, int limit = 10}) async {
+    try {
+      final response =
+          await apiClient.get(ApiConstants.adminProviders, params: {
+        'page': page.toString(),
+        'limit': limit.toString(),
+      });
+
+      if (response is Map<String, dynamic> &&
+          response['status'] == 'success' &&
+          response['data'] != null) {
+        final data = response['data'] as Map<String, dynamic>;
+        return ProviderListResponse.fromJson(data);
+      } else {
+        throw ServerException(
+            response['message'] ?? 'Error obteniendo proveedores');
+      }
+    } on ServerException {
+      rethrow;
+    } catch (e) {
+      throw ServerException('Error obteniendo proveedores: $e');
     }
   }
 }

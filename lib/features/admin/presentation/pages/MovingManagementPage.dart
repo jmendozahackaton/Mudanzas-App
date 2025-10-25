@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../moving/presentation/bloc/moving_bloc.dart';
 import '../../../moving/presentation/bloc/moving_event.dart';
 import '../../../moving/presentation/bloc/moving_state.dart';
+import '../widgets/provider_selection_dialog.dart';
 
 class MovingManagementPage extends StatefulWidget {
   const MovingManagementPage({super.key});
@@ -31,12 +32,16 @@ class _MovingManagementPageState extends State<MovingManagementPage> {
   }
 
   void _assignProvider(int solicitudId, int proveedorId) {
-    context.read<MovingBloc>().add(AssignProviderEvent(
-          {
-            'solicitud_id': solicitudId,
-            'proveedor_id': proveedorId,
-          },
-        ));
+    final assignData = {
+      'solicitud_id': solicitudId,
+      'proveedor_id': proveedorId,
+      'costo_base': 0, // El admin puede ajustar esto
+      'costo_total': 0,
+      'comision_plataforma': 0,
+    };
+
+    print('🎯 Asignando solicitud $solicitudId al proveedor $proveedorId');
+    context.read<MovingBloc>().add(AssignProviderEvent(assignData));
   }
 
   @override
@@ -62,8 +67,9 @@ class _MovingManagementPageState extends State<MovingManagementPage> {
               listener: (context, state) {
                 if (state is ProviderAssigned) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Proveedor asignado exitosamente'),
+                    SnackBar(
+                      content: Text(
+                          '✅ Proveedor asignado a mudanza #${state.moving.codigoMudanza}'),
                       backgroundColor: Colors.green,
                     ),
                   );
@@ -71,7 +77,7 @@ class _MovingManagementPageState extends State<MovingManagementPage> {
                 } else if (state is MovingError) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(state.message),
+                      content: Text('❌ Error: ${state.message}'),
                       backgroundColor: Colors.red,
                     ),
                   );
@@ -177,20 +183,26 @@ class _MovingManagementPageState extends State<MovingManagementPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // ✅ CORREGIDO: Row con Expanded para evitar overflow
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Solicitud #${request.codigoSolicitud}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
+                Expanded(
+                  child: Text(
+                    'Solicitud #${request.codigoSolicitud}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 _buildStatusChip(request.estado),
               ],
             ),
             const SizedBox(height: 12),
+
+            // ✅ TAMBIÉN CORREGIR LAS FILAS DE DETALLES
             _buildDetailRow('Cliente',
                 '${request.clienteNombre} ${request.clienteApellido}'),
             _buildDetailRow('Origen', request.direccionOrigen),
@@ -198,10 +210,13 @@ class _MovingManagementPageState extends State<MovingManagementPage> {
             _buildDetailRow(
                 'Fecha Programada', _formatDate(request.fechaProgramada)),
             _buildDetailRow('Urgencia', request.urgencia.toUpperCase()),
+
             if (request.cotizacionEstimada > 0)
               _buildDetailRow('Cotización',
                   '\$${request.cotizacionEstimada.toStringAsFixed(2)}'),
+
             const SizedBox(height: 12),
+
             if (request.estado == 'pendiente' ||
                 request.estado == 'buscando_proveedor')
               _buildAssignSection(request),
@@ -244,24 +259,9 @@ class _MovingManagementPageState extends State<MovingManagementPage> {
   void _showProviderSelection(int solicitudId) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Asignar Proveedor'),
-        content: const Text(
-            'Funcionalidad de selección de proveedor en desarrollo.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cerrar'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              // Temporal: Asignar a un proveedor de prueba
-              _assignProvider(solicitudId, 1); // ID de proveedor temporal
-              Navigator.pop(context);
-            },
-            child: const Text('Asignar (Demo)'),
-          ),
-        ],
+      builder: (context) => ProviderSelectionDialog(
+        solicitudId: solicitudId,
+        onProviderSelected: _assignProvider,
       ),
     );
   }
@@ -279,7 +279,14 @@ class _MovingManagementPageState extends State<MovingManagementPage> {
               style: const TextStyle(fontWeight: FontWeight.w500),
             ),
           ),
-          Expanded(child: Text(value)),
+          Expanded(
+            // ✅ AGREGAR EXPANDED AQUÍ TAMBIÉN
+            child: Text(
+              value,
+              overflow: TextOverflow.ellipsis, // ✅ AGREGAR ELLIPSIS
+              maxLines: 2, // ✅ LIMITAR A 2 LÍNEAS
+            ),
+          ),
         ],
       ),
     );

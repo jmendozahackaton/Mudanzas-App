@@ -1,3 +1,5 @@
+import '../../../admin/domain/entities/admin_entities.dart';
+
 class ProviderEntity {
   final int id;
   final int usuarioId;
@@ -111,5 +113,15 @@ class ProviderAvailabilityEntity {
   ProviderAvailabilityEntity({
     required this.disponible,
     required this.modoOcupado,
+  });
+}
+
+class ProviderListEntity {
+  final List<ProviderEntity> providers;
+  final PaginationEntity pagination; // Usar el existente
+
+  const ProviderListEntity({
+    required this.providers,
+    required this.pagination,
   });
 }

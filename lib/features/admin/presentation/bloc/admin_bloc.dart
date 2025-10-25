@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../domain/usecases/get_providers_usecase.dart';
 import '../../domain/usecases/get_users_usecase.dart';
 import '../../domain/usecases/update_user_status_usecase.dart';
 import '../../domain/usecases/update_user_role_usecase.dart';
@@ -15,6 +16,7 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
   final SearchUsersUseCase searchUsersUseCase;
   final GetUserByIdUseCase getUserByIdUseCase;
   final UpdateUserProfileUseCase updateUserProfileUseCase;
+  final GetProvidersUseCase getProvidersUseCase;
 
   AdminBloc({
     required this.getUsersUseCase,
@@ -23,6 +25,7 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
     required this.searchUsersUseCase,
     required this.getUserByIdUseCase,
     required this.updateUserProfileUseCase,
+    required this.getProvidersUseCase,
   }) : super(AdminInitial()) {
     on<GetUsersEvent>(_onGetUsersEvent);
     on<UpdateUserStatusEvent>(_onUpdateUserStatusEvent);
@@ -31,6 +34,7 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
     on<SearchUsersEvent>(_onSearchUsersEvent);
     on<GetUserByIdEvent>(_onGetUserByIdEvent);
     on<UpdateUserProfileEvent>(_onUpdateUserProfileEvent);
+    on<GetProvidersEvent>(_onGetProvidersEvent);
   }
 
   Future<void> _onGetUsersEvent(
@@ -68,6 +72,21 @@ class AdminBloc extends Bloc<AdminEvent, AdminState> {
       (failure) => emit(AdminError(message: failure.message)),
       (_) => emit(
           UserStatusUpdated(userId: event.userId, newStatus: event.status)),
+    );
+  }
+
+  Future<void> _onGetProvidersEvent(
+      GetProvidersEvent event, Emitter<AdminState> emit) async {
+    emit(AdminLoading());
+
+    final result = await getProvidersUseCase(GetProvidersParams(
+      page: event.page,
+      limit: event.limit,
+    ));
+
+    result.fold(
+      (failure) => emit(AdminError(message: failure.message)),
+      (providerList) => emit(ProvidersLoaded(providerList: providerList)),
     );
   }
 

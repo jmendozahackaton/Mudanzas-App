@@ -3,6 +3,7 @@ import 'package:mudanzas/core/network/api_client.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Auth
+import 'features/admin/domain/usecases/get_providers_usecase.dart';
 import 'features/auth/data/datasources/auth_remote_data_source.dart';
 import 'features/auth/data/repositories/auth_repository_impl.dart';
 import 'features/auth/domain/repositories/auth_repository.dart';
@@ -132,6 +133,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => SearchUsersUseCase(sl()));
   sl.registerLazySingleton(() => GetUserByIdUseCase(sl()));
   sl.registerLazySingleton(() => UpdateUserProfileUseCase(sl()));
+  sl.registerLazySingleton(() => GetProvidersUseCase(sl()));
 
   // Bloc
   sl.registerFactory(() => AdminBloc(
@@ -141,6 +143,7 @@ Future<void> init() async {
         searchUsersUseCase: sl(),
         getUserByIdUseCase: sl(),
         updateUserProfileUseCase: sl(),
+        getProvidersUseCase: sl(),
       ));
 
   // Provider

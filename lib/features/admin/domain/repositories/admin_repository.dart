@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/errors/failures.dart';
+import '../../../provider/domain/entities/provider_entities.dart';
 import '../entities/admin_entities.dart';
 
 abstract class AdminRepository {
@@ -30,5 +31,10 @@ abstract class AdminRepository {
 
   Future<Either<Failure, UserEntity>> updateUserProfile({
     required UserEntity user,
+  });
+
+  Future<Either<Failure, ProviderListEntity>> getProviders({
+    int page = 1,
+    int limit = 10,
   });
 }

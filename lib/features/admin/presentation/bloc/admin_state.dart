@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../../provider/domain/entities/provider_entities.dart';
 import '../../domain/entities/admin_entities.dart';
 
 abstract class AdminState extends Equatable {
@@ -76,6 +77,15 @@ class UserRoleUpdated extends AdminState {
 
   @override
   List<Object> get props => [userId, newRole];
+}
+
+class ProvidersLoaded extends AdminState {
+  final ProviderListEntity providerList;
+
+  const ProvidersLoaded({required this.providerList});
+
+  @override
+  List<Object> get props => [providerList];
 }
 
 class AdminError extends AdminState {

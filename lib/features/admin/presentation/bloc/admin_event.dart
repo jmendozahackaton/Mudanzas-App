@@ -78,4 +78,14 @@ class UpdateUserRoleEvent extends AdminEvent {
   List<Object> get props => [userId, role];
 }
 
+class GetProvidersEvent extends AdminEvent {
+  final int page;
+  final int limit;
+
+  const GetProvidersEvent({this.page = 1, this.limit = 10});
+
+  @override
+  List<Object> get props => [page, limit];
+}
+
 class RefreshUsersEvent extends AdminEvent {}
