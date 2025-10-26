@@ -3,7 +3,6 @@ import 'package:mudanzas/core/network/api_client.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Auth
-import 'features/admin/domain/usecases/get_providers_usecase.dart';
 import 'features/auth/data/datasources/auth_remote_data_source.dart';
 import 'features/auth/data/repositories/auth_repository_impl.dart';
 import 'features/auth/domain/repositories/auth_repository.dart';
@@ -31,6 +30,7 @@ import 'features/admin/domain/usecases/update_user_role_usecase.dart';
 import 'features/admin/domain/usecases/search_users_usecase.dart';
 import 'features/admin/domain/usecases/get_user_by_id_usecase.dart';
 import 'features/admin/domain/usecases/update_user_profile_usecase.dart';
+import 'features/admin/domain/usecases/get_providers_usecase.dart';
 import 'features/admin/presentation/bloc/admin_bloc.dart';
 
 // Provider
@@ -54,6 +54,7 @@ import 'features/moving/domain/usecases/create_moving_request_usecase.dart';
 import 'features/moving/domain/usecases/get_client_requests_usecase.dart';
 import 'features/moving/domain/usecases/get_all_requests_usecase.dart';
 import 'features/moving/domain/usecases/get_client_movings_usecase.dart';
+import 'features/moving/domain/usecases/get_provider_movings_usecase.dart';
 import 'features/moving/domain/usecases/update_moving_status_usecase.dart';
 import 'features/moving/domain/usecases/assign_provider_usecase.dart';
 import 'features/moving/presentation/bloc/moving_bloc.dart';
@@ -195,6 +196,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => GetClientRequestsUseCase(sl()));
   sl.registerLazySingleton(() => GetAllRequestsUseCase(sl()));
   sl.registerLazySingleton(() => GetClientMovingsUseCase(sl()));
+  sl.registerLazySingleton(() => GetProviderMovingsUseCase(sl()));
   sl.registerLazySingleton(() => UpdateMovingStatusUseCase(sl()));
   sl.registerLazySingleton(() => AssignProviderUseCase(sl()));
 
@@ -204,6 +206,7 @@ Future<void> init() async {
         getClientRequestsUseCase: sl(),
         getAllRequestsUseCase: sl(),
         getClientMovingsUseCase: sl(),
+        getProviderMovingsUseCase: sl(),
         updateMovingStatusUseCase: sl(),
         assignProviderUseCase: sl(),
       ));

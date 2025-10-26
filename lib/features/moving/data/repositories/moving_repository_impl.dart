@@ -98,6 +98,31 @@ class MovingRepositoryImpl implements MovingRepository {
   }
 
   @override
+  Future<Either<Failure, MovingListEntity>> getProviderMovings({
+    int page = 1,
+    int limit = 10,
+  }) async {
+    try {
+      final response =
+          await remoteDataSource.getProviderMovings(page: page, limit: limit);
+      final movings = response.movings.map(_mapMovingModelToEntity).toList();
+      return Right(MovingListEntity(
+        movings: movings,
+        pagination: PaginationEntity(
+          page: response.pagination.page,
+          limit: response.pagination.limit,
+          total: response.pagination.total,
+          pages: response.pagination.pages,
+        ),
+      ));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.toString()));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(e.toString()));
+    }
+  }
+
+  @override
   Future<Either<Failure, MovingEntity>> updateMovingStatus(
       int mudanzaId, String estado) async {
     try {

@@ -39,6 +39,8 @@ class ApiConstants {
   static const String movingRequest = '/api/moving/request';
   static const String movingRequests = '/api/moving/requests';
   static const String movingMovings = '/api/moving/movings';
+  static const String movingProviderMovings = '/api/moving/provider-movings';
+
   static const String movingStatus = '/api/moving/status';
 
   // Admin - Providers endpoints

@@ -48,6 +48,15 @@ class ClientMovingsLoaded extends MovingState {
   List<Object> get props => [movings];
 }
 
+class ProviderMovingsLoaded extends MovingState {
+  final MovingListEntity movings;
+
+  const ProviderMovingsLoaded({required this.movings});
+
+  @override
+  List<Object> get props => [movings];
+}
+
 class MovingStatusUpdated extends MovingState {
   final MovingEntity moving;
 

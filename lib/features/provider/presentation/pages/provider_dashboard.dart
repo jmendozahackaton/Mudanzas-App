@@ -8,6 +8,7 @@ import '../bloc/provider_bloc.dart';
 import '../bloc/provider_event.dart';
 import '../bloc/provider_state.dart';
 import 'provider_profile_page.dart';
+import 'provider_services_page.dart';
 
 class ProviderDashboard extends StatefulWidget {
   const ProviderDashboard({super.key});
@@ -784,11 +785,9 @@ class _ProviderDashboardState extends State<ProviderDashboard> {
   }
 
   void _navigateToServices() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Próximamente: Gestión de servicios'),
-        backgroundColor: Colors.blue,
-      ),
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const ProviderServicesPage()),
     );
   }
 

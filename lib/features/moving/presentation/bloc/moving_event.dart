@@ -47,6 +47,16 @@ class GetClientMovingsEvent extends MovingEvent {
   List<Object> get props => [page, limit];
 }
 
+class GetProviderMovingsEvent extends MovingEvent {
+  final int page;
+  final int limit;
+
+  const GetProviderMovingsEvent({this.page = 1, this.limit = 10});
+
+  @override
+  List<Object> get props => [page, limit];
+}
+
 class UpdateMovingStatusEvent extends MovingEvent {
   final int mudanzaId;
   final String estado;

@@ -3,6 +3,7 @@ import '../../domain/usecases/create_moving_request_usecase.dart';
 import '../../domain/usecases/get_client_requests_usecase.dart';
 import '../../domain/usecases/get_all_requests_usecase.dart';
 import '../../domain/usecases/get_client_movings_usecase.dart';
+import '../../domain/usecases/get_provider_movings_usecase.dart';
 import '../../domain/usecases/update_moving_status_usecase.dart';
 import '../../domain/usecases/assign_provider_usecase.dart';
 import 'moving_event.dart';
@@ -13,6 +14,7 @@ class MovingBloc extends Bloc<MovingEvent, MovingState> {
   final GetClientRequestsUseCase getClientRequestsUseCase;
   final GetAllRequestsUseCase getAllRequestsUseCase;
   final GetClientMovingsUseCase getClientMovingsUseCase;
+  final GetProviderMovingsUseCase getProviderMovingsUseCase;
   final UpdateMovingStatusUseCase updateMovingStatusUseCase;
   final AssignProviderUseCase assignProviderUseCase;
 
@@ -21,6 +23,7 @@ class MovingBloc extends Bloc<MovingEvent, MovingState> {
     required this.getClientRequestsUseCase,
     required this.getAllRequestsUseCase,
     required this.getClientMovingsUseCase,
+    required this.getProviderMovingsUseCase,
     required this.updateMovingStatusUseCase,
     required this.assignProviderUseCase,
   }) : super(MovingInitial()) {
@@ -28,6 +31,7 @@ class MovingBloc extends Bloc<MovingEvent, MovingState> {
     on<GetClientRequestsEvent>(_onGetClientRequests);
     on<GetAllRequestsEvent>(_onGetAllRequests);
     on<GetClientMovingsEvent>(_onGetClientMovings);
+    on<GetProviderMovingsEvent>(_onGetProviderMovings);
     on<UpdateMovingStatusEvent>(_onUpdateMovingStatus);
     on<AssignProviderEvent>(_onAssignProvider);
     on<RefreshMovingDataEvent>(_onRefreshMovingData);
@@ -96,6 +100,21 @@ class MovingBloc extends Bloc<MovingEvent, MovingState> {
     result.fold(
       (failure) => emit(MovingError(message: failure.toString())),
       (movings) => emit(ClientMovingsLoaded(movings: movings)),
+    );
+  }
+
+  Future<void> _onGetProviderMovings(
+      GetProviderMovingsEvent event, Emitter<MovingState> emit) async {
+    emit(MovingLoading());
+
+    final result = await getProviderMovingsUseCase(
+      page: event.page,
+      limit: event.limit,
+    );
+
+    result.fold(
+      (failure) => emit(MovingError(message: failure.message)),
+      (movings) => emit(ProviderMovingsLoaded(movings: movings)),
     );
   }
 

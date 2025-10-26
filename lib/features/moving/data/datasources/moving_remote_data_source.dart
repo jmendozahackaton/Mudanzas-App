@@ -12,6 +12,7 @@ abstract class MovingRemoteDataSource {
   Future<MovingRequestListResponse> getAllRequests(
       {int page = 1, int limit = 10, String? estado});
   Future<MovingListResponse> getClientMovings({int page = 1, int limit = 10});
+  Future<MovingListResponse> getProviderMovings({int page = 1, int limit = 10});
   Future<MovingModel> updateMovingStatus(int mudanzaId, String estado);
   Future<MovingModel> assignProvider(Map<String, dynamic> assignData);
 }
@@ -168,6 +169,40 @@ class MovingRemoteDataSourceImpl implements MovingRemoteDataSource {
     } catch (e) {
       print('❌ Error obteniendo mudanzas: $e');
       throw ServerException('Error obteniendo mudanzas: $e');
+    }
+  }
+
+  @override
+  Future<MovingListResponse> getProviderMovings(
+      {int page = 1, int limit = 10}) async {
+    try {
+      print(
+          '📤 Obteniendo mudanzas del proveedor - page: $page, limit: $limit');
+
+      final response = await apiClient.get(
+        ApiConstants.movingProviderMovings,
+        params: {
+          'page': page.toString(),
+          'limit': limit.toString(),
+        },
+      );
+
+      print('📥 Get Provider Movings response: $response');
+
+      if (response is Map<String, dynamic> &&
+          response['status'] == 'success' &&
+          response['data'] != null) {
+        final data = response['data'] as Map<String, dynamic>;
+        return MovingListResponse.fromJson(data);
+      } else {
+        throw ServerException(
+            response['message'] ?? 'Error obteniendo mudanzas del proveedor');
+      }
+    } on ServerException {
+      rethrow;
+    } catch (e) {
+      print('❌ Error obteniendo mudanzas del proveedor: $e');
+      throw ServerException('Error obteniendo mudanzas del proveedor: $e');
     }
   }
 

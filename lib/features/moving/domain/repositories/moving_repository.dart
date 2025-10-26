@@ -11,6 +11,8 @@ abstract class MovingRepository {
       {int page = 1, int limit = 10, String? estado});
   Future<Either<Failure, MovingListEntity>> getClientMovings(
       {int page = 1, int limit = 10});
+  Future<Either<Failure, MovingListEntity>> getProviderMovings(
+      {int page = 1, int limit = 10});
   Future<Either<Failure, MovingEntity>> updateMovingStatus(
       int mudanzaId, String estado);
   Future<Either<Failure, MovingEntity>> assignProvider(
