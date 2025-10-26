@@ -249,15 +249,35 @@ class ProviderStatisticsModel extends Equatable {
   });
 
   factory ProviderStatisticsModel.fromJson(Map<String, dynamic> json) {
+    // Función helper para parsear valores de forma segura
+    int safeParseInt(dynamic value) {
+      if (value == null) return 0;
+      if (value is int) return value;
+      if (value is double) return value.toInt();
+      if (value is String) return int.tryParse(value) ?? 0;
+      return 0;
+    }
+
+    double safeParseDouble(dynamic value) {
+      if (value == null) return 0.0;
+      if (value is double) return value;
+      if (value is int) return value.toDouble();
+      if (value is String) return double.tryParse(value) ?? 0.0;
+      return 0.0;
+    }
+
+    print('📊 Parsing statistics JSON: $json');
+    print('📊 puntuacion_promedio value: ${json['puntuacion_promedio']}');
+    print(
+        '📊 puntuacion_promedio type: ${json['puntuacion_promedio']?.runtimeType}');
+
     return ProviderStatisticsModel(
-      totalServicios: json['total_servicios'] ?? 0,
-      serviciosCompletados: json['servicios_completados'] ?? 0,
-      serviciosCancelados: json['servicios_cancelados'] ?? 0,
-      puntuacionPromedio:
-          (json['puntuacion_promedio'] as num?)?.toDouble() ?? 0.0,
-      ingresosTotales: (json['ingresos_totales'] as num?)?.toDouble() ?? 0.0,
-      comisionAcumulada:
-          (json['comision_acumulada'] as num?)?.toDouble() ?? 0.0,
+      totalServicios: safeParseInt(json['total_servicios']),
+      serviciosCompletados: safeParseInt(json['servicios_completados']),
+      serviciosCancelados: safeParseInt(json['servicios_cancelados']),
+      puntuacionPromedio: safeParseDouble(json['puntuacion_promedio']),
+      ingresosTotales: safeParseDouble(json['ingresos_totales']),
+      comisionAcumulada: safeParseDouble(json['comision_acumulada']),
     );
   }
 
