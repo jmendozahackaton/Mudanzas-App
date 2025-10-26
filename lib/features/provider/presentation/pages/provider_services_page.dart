@@ -156,7 +156,7 @@ class _ProviderServicesPageState extends State<ProviderServicesPage> {
           ),
         ),
         title: Text(
-          'Servicio #${moving.codigoMoving}',
+          'Servicio #${moving.codigoMudanza}',
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Column(
@@ -354,7 +354,7 @@ class _ProviderServicesPageState extends State<ProviderServicesPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Servicio #${moving.codigoMoving}'),
+        title: Text('Servicio #${moving.codigoMudanza}'),
         content: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -479,23 +479,37 @@ class _ProviderServicesPageState extends State<ProviderServicesPage> {
     );
   }
 
-  void _updateMovingStatus(int movingId, String newStatus) {
+  void _updateMovingStatus(int movingId, String newStatus) async {
+    // Cerrar diálogos primero
+    Navigator.pop(context); // Cerrar diálogo de actualización
+    Navigator.pop(context); // Cerrar diálogo de detalles
+
+    // Mostrar loading
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Actualizando estado a: $newStatus...'),
+        backgroundColor: Colors.blue,
+      ),
+    );
+
+    // Actualizar estado
     context.read<MovingBloc>().add(UpdateMovingStatusEvent(
           mudanzaId: movingId,
           estado: newStatus,
         ));
 
-    Navigator.pop(context); // Cerrar diálogo de actualización
-    Navigator.pop(context); // Cerrar diálogo de detalles
+    // Esperar un poco y luego recargar la lista
+    await Future.delayed(const Duration(milliseconds: 500));
 
+    // Recargar la lista para reflejar los cambios
+    _loadProviderMovings();
+
+    // Mostrar mensaje de éxito
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Estado actualizado a: $newStatus'),
+      const SnackBar(
+        content: Text('Estado actualizado exitosamente'),
         backgroundColor: Colors.green,
       ),
     );
-
-    // Recargar la lista
-    _loadProviderMovings();
   }
 }
