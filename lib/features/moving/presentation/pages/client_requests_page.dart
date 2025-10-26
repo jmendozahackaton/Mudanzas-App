@@ -184,25 +184,6 @@ class _ClientRequestsPageState extends State<ClientRequestsPage> {
             Row(
               children: [
                 _buildStatusChip(request.estado),
-                if (request.tieneMudanzaAsignada)
-                  Container(
-                    margin: const EdgeInsets.only(left: 8),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Colors.green.withAlpha(10),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.green),
-                    ),
-                    child: const Text(
-                      'ASIGNADA',
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: Colors.green,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
               ],
             ),
           ],
