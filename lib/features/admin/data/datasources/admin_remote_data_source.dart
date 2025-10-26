@@ -275,24 +275,39 @@ class AdminRemoteDataSourceImpl implements AdminRemoteDataSource {
   Future<ProviderListResponse> getProviders(
       {int page = 1, int limit = 10}) async {
     try {
+      print('📤 Get Providers request - page: $page, limit: $limit');
+
       final response =
           await apiClient.get(ApiConstants.adminProviders, params: {
         'page': page.toString(),
         'limit': limit.toString(),
       });
 
-      if (response is Map<String, dynamic> &&
-          response['status'] == 'success' &&
-          response['data'] != null) {
-        final data = response['data'] as Map<String, dynamic>;
-        return ProviderListResponse.fromJson(data);
+      print('📥 Get Providers response: $response');
+      print('📥 Response type: ${response.runtimeType}');
+
+      if (response is Map<String, dynamic>) {
+        print('✅ Response is Map<String, dynamic>');
+
+        if (response['status'] == 'success' && response['data'] != null) {
+          final data = response['data'] as Map<String, dynamic>;
+          print('📊 Data keys: ${data.keys}');
+          print('📊 Providers count: ${data['providers']?.length ?? 0}');
+
+          return ProviderListResponse.fromJson(data);
+        } else {
+          print('❌ Error in response: ${response['message']}');
+          throw ServerException(
+              response['message'] ?? 'Error obteniendo proveedores');
+        }
       } else {
-        throw ServerException(
-            response['message'] ?? 'Error obteniendo proveedores');
+        print('❌ Response is not Map<String, dynamic>');
+        throw ServerException('Formato de respuesta inválido');
       }
     } on ServerException {
       rethrow;
     } catch (e) {
+      print('❌ Error in getProviders: $e');
       throw ServerException('Error obteniendo proveedores: $e');
     }
   }

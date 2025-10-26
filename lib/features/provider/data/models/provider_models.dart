@@ -272,26 +272,46 @@ class ProviderStatisticsModel extends Equatable {
       ];
 }
 
-class ProviderListResponse extends Equatable {
+class ProviderListResponse {
   final List<ProviderModel> providers;
   final PaginationModel pagination;
 
-  const ProviderListResponse({
+  ProviderListResponse({
     required this.providers,
     required this.pagination,
   });
 
   factory ProviderListResponse.fromJson(Map<String, dynamic> json) {
+    print('🔄 Parsing ProviderListResponse from JSON');
+    print('📋 All JSON keys: ${json.keys}');
+    print('📋 proveedores key exists: ${json.containsKey('proveedores')}');
+    print('📋 proveedores value type: ${json['proveedores']?.runtimeType}');
+    print(
+        '📋 proveedores length: ${(json['proveedores'] as List?)?.length ?? 0}');
+    print('📋 providers key exists: ${json.containsKey('providers')}');
+
+    // Usar 'proveedores' si existe, sino 'providers'
+    final providersData = json['proveedores'] ?? json['providers'];
+
+    print(
+        '📋 Using providersData from key: ${json.containsKey('proveedores') ? 'proveedores' : 'providers'}');
+    print('📋 providersData type: ${providersData.runtimeType}');
+    print('📋 providersData length: ${(providersData as List?)?.length ?? 0}');
+
+    final providersList = (providersData as List? ?? []).map((providerJson) {
+      print('📦 Parsing provider: $providerJson');
+      return ProviderModel.fromJson(providerJson);
+    }).toList();
+
+    final pagination = PaginationModel.fromJson(json['pagination'] ?? {});
+
+    print('✅ Successfully parsed ${providersList.length} providers');
+
     return ProviderListResponse(
-      providers: (json['providers'] as List)
-          .map((provider) => ProviderModel.fromJson(provider))
-          .toList(),
-      pagination: PaginationModel.fromJson(json['pagination']),
+      providers: providersList,
+      pagination: pagination,
     );
   }
-
-  @override
-  List<Object?> get props => [providers, pagination];
 }
 
 // Reutilizar PaginationModel del admin
